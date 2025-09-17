@@ -3,35 +3,35 @@
 #include "system/log.h"
 #include "system/environment.h"
 
-#ifdef DD_DEBUG
-    #define DD_ENABLE_BREAK
-    #define DD_ENABLE_ASSERT
+#ifdef GM_DEBUG
+    #define GM_ENABLE_BREAK
+    #define GM_ENABLE_ASSERT
 #endif
 
-#ifdef DD_ENABLE_BREAK
-    #if defined(DD_COMPILER_MSVC)
-    #define DD_BREAK() __debugbreak()
-    #elif defined(DD_COMPILER_CLANG) || defined(DD_COMPILER_GCC)
-    #define DD_BREAK() __builtin_trap()
+#ifdef GM_ENABLE_BREAK
+    #if defined(GM_COMPILER_MSVC)
+        #define GM_BREAK() __debugbreak()
+    #elif defined(GM_COMPILER_CLANG) || defined(GM_COMPILER_GCC)
+        #define GM_BREAK() __builtin_trap()
     #else
-        #error "DD_BREAK() not implemented for this compiler"
+        #error "GM_BREAK() not implemented for this compiler"
     #endif
 #else
-    #define DD_BREAK()
+    #define GM_BREAK()
 #endif
 
-#ifdef DD_ENABLE_ASSERT
-    namespace dd {
+#ifdef GM_ENABLE_ASSERT
+    namespace Game {
         void print_assert_error(std::string_view tag, std::string_view expression, std::string_view message);
     }
 
-    #define DD_ASSERT(expression, message) \
+    #define GM_ASSERT(expression, message) \
             if (expression) {\
                 /* Continue */\
             } else {\
-                ::dd::print_assert_error(DD_TAG(), #expression, message);\
-                DD_BREAK(); \
+                ::Game::print_assert_error(GM_TAG, #expression, message);\
+                GM_BREAK(); \
             }
 #else
-    #define DD_ASSERT(expression)
+    #define GM_ASSERT(expression)
 #endif

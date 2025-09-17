@@ -2,10 +2,10 @@
 
 #include <vulkan/vulkan.h>
 
-namespace dd {
+namespace Game {
 
     // Forward declaration
-    struct vulkan;
+    struct Vulkan;
 
     struct QueueInfo {
         u32 queueIndex = -1;
@@ -22,9 +22,9 @@ namespace dd {
         VkDevice* vk_ptr();
     };
 
-    void create_device(vulkan& vulkan);
+    void create_device(Vulkan& vulkan);
 
-    void destroy_device(vulkan& vulkan);
+    void destroy_device(Vulkan& vulkan);
 
-    VkQueue get_device_queue(vulkan& vulkan, uint32_t queue_family_index);
+    VkQueue get_device_queue(Vulkan& vulkan, uint32_t queue_family_index);
 }

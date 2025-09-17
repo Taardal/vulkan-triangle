@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace dd {
+namespace Game {
     enum class EventType {
         None = 0,
         KeyPressed,

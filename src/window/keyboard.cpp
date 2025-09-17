@@ -1,6 +1,6 @@
 #include "keyboard.h"
 
-namespace dd {
+namespace Game {
     Keyboard::Keyboard(const KeyboardConfig& config) : config(config),
         keys(createKeys()),
         keysByName(createKeysByName()),

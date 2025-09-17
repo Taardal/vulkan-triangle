@@ -1,3 +1,3 @@
 #pragma once
 
-#define DD_TO_STRING(x) #x
+#define GM_TO_STRING(x) #x

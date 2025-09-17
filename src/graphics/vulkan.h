@@ -6,64 +6,63 @@
 
 #include <vulkan/vulkan.h>
 
-#define DD_VK_ALLOCATOR nullptr
-#define DD_ASSERT_VK_SUCCESS(expression, message) DD_ASSERT(expression == VK_SUCCESS, message)
-#define DD_ASSERT_THROW_VK_SUCCESS(expression, message) DD_ASSERT_THROW(expression == VK_SUCCESS, message)
+#define GM_VK_ALLOCATOR nullptr
+#define GM_ASSERT_VK_SUCCESS(expression, message) GM_ASSERT(expression == VK_SUCCESS, message)
+#define GM_ASSERT_THROW_VK_SUCCESS(expression, message) GM_ASSERT_THROW(expression == VK_SUCCESS, message)
 
-namespace dd {
+namespace Game {
 
-    struct vulkan_config {
-        window* window = nullptr;
+    struct VulkanConfig {
         std::string application_name;
         std::string engine_name;
         bool validation_layers_enabled = false;
+        Window* window = nullptr;
     };
 
-    struct vulkan {
-        vulkan_config config;
+    struct Vulkan {
+        VulkanConfig config{};
         VkInstance instance = nullptr;
+        std::vector<const char*> extensions;
+        std::vector<const char*> validation_layers;
         VkDebugUtilsMessengerEXT debug_messenger = nullptr;
+        VkDebugUtilsMessengerCreateInfoEXT debug_messenger_create_info{};
+
         VkSurfaceKHR surface = nullptr;
         physical_device physical_device;
         VulkanDevice device;
-
-        explicit vulkan(vulkan_config config) : config(std::move(config)) {}
     };
 
-    void initialize_vulkan(vulkan& vulkan);
+    Vulkan create_vulkan(const VulkanConfig& config);
 
-    void terminate_vulkan(vulkan& vulkan);
+    void destroy_vulkan(Vulkan& vulkan);
 
-    void create_vulkan_instance(
-        vulkan& vulkan,
-        const std::vector<const char*>& required_extensions,
-        const std::vector<const char*>& validation_layers,
-        const VkDebugUtilsMessengerCreateInfoEXT& debug_messenger_create_info
-    );
+    VkResult create_vulkan_instance(Vulkan& vulkan);
 
-    void destroy_vulkan_instance(vulkan& vulkan);
+    void destroy_vulkan_instance(const Vulkan& vulkan);
 
-    void create_debug_messenger(vulkan& vulkan, const VkDebugUtilsMessengerCreateInfoEXT& debug_messenger_create_info);
+    VkResult create_vulkan_debug_messenger(Vulkan& vulkan);
 
-    void destroy_debug_messenger(vulkan& vulkan);
+    void destroy_vulkan_debug_messenger(const Vulkan& vulkan);
 
-    void create_surface(vulkan& vulkan);
+    VkResult create_vulkan_surface(Vulkan& vulkan);
 
-    void destroy_surface(vulkan& vulkan);
+    void destroy_vulkan_surface(const Vulkan& vulkan);
 
     bool is_vulkan_supported();
 
-    std::vector<const char*> get_required_extensions();
+    std::vector<const char*> get_required_vulkan_extensions(const Vulkan& vulkan);
 
-    std::vector<VkExtensionProperties> get_available_extensions();
+    std::vector<VkExtensionProperties> get_available_vulkan_extensions();
 
-    bool has_extensions(const std::vector<const char*>& extensions);
+    bool has_vulkan_extensions(const std::vector<const char*>& extensions);
 
-    std::vector<VkLayerProperties> get_available_validation_layers();
+    std::vector<const char*> get_required_vulkan_validation_layers();
 
-    bool has_validation_layers(const std::vector<const char*>& validation_layers);
+    std::vector<VkLayerProperties> get_available_vulkan_validation_layers();
 
-    VkDebugUtilsMessengerCreateInfoEXT get_debug_messenger_create_info();
+    bool has_vulkan_validation_layers(const std::vector<const char*>& validation_layers);
+
+    VkDebugUtilsMessengerCreateInfoEXT get_vulkan_debug_messenger_create_info();
 
     VKAPI_ATTR VkBool32 VKAPI_CALL on_vulkan_debug_message(
             VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,

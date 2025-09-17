@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace dd {
+namespace Game {
 
     typedef std::chrono::high_resolution_clock::time_point time;
     typedef std::chrono::high_resolution_clock::duration duration;

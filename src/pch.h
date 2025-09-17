@@ -11,6 +11,10 @@
 #include <sstream>
 #include <vector>
 
+// 3rd-party
+#include <vulkan/vulkan.h> // Vulkan must be included before GLFW
+#include <GLFW/glfw3.h>
+
 // App
 #include "system/assert.h"
 #include "system/error.h"

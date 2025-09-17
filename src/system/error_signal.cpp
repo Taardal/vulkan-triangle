@@ -1,6 +1,6 @@
 #include "error_signal.h"
 
-namespace dd {
+namespace Game {
     void initializeErrorSignalHandlers() {
         signal(SIGHUP, handleErrorSignal);  // Hangup
         signal(SIGILL, handleErrorSignal);  // Illegal instruction
@@ -28,9 +28,9 @@ namespace dd {
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
         fprintf(stderr, "[%s] %s\n", name.c_str(), description.c_str());
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
-#if defined(DD_PRINT_UNIX_STACKTRACE)
+#if defined(GM_PRINT_UNIX_STACKTRACE)
         printUnixStacktrace();
-#elif defined(DD_PRINT_WINDOWS_STACKTRACE)
+#elif defined(GM_PRINT_WINDOWS_STACKTRACE)
         fprintf(stderr, "Could not print stacktrace for Windows, not implemented\n");
 #else
         fprintf(stderr, "Could not print stacktrace, unsupported platform\n");
@@ -115,11 +115,7 @@ namespace dd {
         }
     }
 
-#ifdef DD_PRINT_UNIX_STACKTRACE
-
-#include <cxxabi.h>
-#include <execinfo.h>
-#include <unistd.h>
+#ifdef GM_PRINT_UNIX_STACKTRACE
 
     void printUnixStacktrace() {
         // Number of stacktrace lines to be printed

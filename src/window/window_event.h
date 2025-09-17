@@ -2,13 +2,13 @@
 
 #include "event.h"
 
-namespace dd {
+namespace Game {
     struct WindowCloseEvent final : Event {
         WindowCloseEvent();
     };
 }
 
-namespace dd {
+namespace Game {
     struct WindowMinimizeEvent final : Event {
         bool minimized;
 
@@ -20,7 +20,7 @@ namespace dd {
     std::ostream& operator<<(std::ostream& os, const WindowMinimizeEvent& event);
 }
 
-namespace dd {
+namespace Game {
     struct WindowResizeEvent final : Event {
         int32_t width;
         int32_t height;

@@ -1,12 +1,12 @@
 #include "window_event.h"
 
-namespace dd {
+namespace Game {
     WindowCloseEvent::WindowCloseEvent()
         : Event(EventType::WindowClose) {
     }
 }
 
-namespace dd {
+namespace Game {
     WindowMinimizeEvent::WindowMinimizeEvent(
         bool minimized
     ) : Event(EventType::WindowMinimize),
@@ -25,7 +25,7 @@ namespace dd {
     }
 }
 
-namespace dd {
+namespace Game {
     WindowResizeEvent::WindowResizeEvent(
         int32_t width,
         int32_t height

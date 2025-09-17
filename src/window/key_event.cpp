@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "key_event.h"
 
-namespace dd {
+namespace Game {
     KeyEvent::KeyEvent(
         EventType type,
         int32_t keyCode,
@@ -32,25 +32,25 @@ namespace dd {
     }
 }
 
-namespace dd {
+namespace Game {
     KeyPressedEvent::KeyPressedEvent(int32_t key, int32_t mods, int32_t scanCode)
         : KeyEvent(EventType::KeyPressed, key, mods, scanCode) {
     }
 }
 
-namespace dd {
+namespace Game {
     KeyReleasedEvent::KeyReleasedEvent(int32_t key, int32_t mods, int32_t scanCode)
         : KeyEvent(EventType::KeyReleased, key, mods, scanCode) {
     }
 }
 
-namespace dd {
+namespace Game {
     KeyRepeatedEvent::KeyRepeatedEvent(int32_t key, int32_t mods, int32_t scanCode)
         : KeyEvent(EventType::KeyRepeated, key, mods, scanCode) {
     }
 }
 
-namespace dd {
+namespace Game {
     KeyTypedEvent::KeyTypedEvent(int32_t key, int32_t mods, int32_t scanCode)
         : KeyEvent(EventType::KeyTyped, key, mods, scanCode) {
     }

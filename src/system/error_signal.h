@@ -2,13 +2,15 @@
 
 #include "environment.h"
 
-#if defined(DD_PLATFORM_MACOS) || defined(DD_PLATFORM_LINUX)
-    #define DD_PRINT_UNIX_STACKTRACE
-    #elif defined(DD_PLATFORM_WINDOWS)
-    #define DD_PRINT_WINDOWS_STACKTRACE
+#if defined(GM_PLATFORM_MACOS) || defined(GM_PLATFORM_LINUX)
+    #define GM_PRINT_UNIX_STACKTRACE
+    #include <cxxabi.h>
+    #include <execinfo.h>
+#elif defined(GM_PLATFORM_WINDOWS)
+    #define GM_PRINT_WINDOWS_STACKTRACE
 #endif
 
-namespace dd {
+namespace Game {
     void initializeErrorSignalHandlers();
 
     void handleErrorSignal(int signal);
@@ -19,7 +21,7 @@ namespace dd {
 
     std::string getSignalDescription(int signal);
 
-#ifdef DD_PRINT_UNIX_STACKTRACE
+#ifdef GM_PRINT_UNIX_STACKTRACE
     void printUnixStacktrace();
 
     void demangleUnixStacktraceLine(std::string* stacktraceLine);

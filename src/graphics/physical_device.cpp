@@ -1,32 +1,32 @@
 #include "physical_device.h"
 #include "vulkan.h"
 
-namespace dd {
+namespace Game {
     physical_device::operator VkPhysicalDevice() const {
         return vk_physical_device;
     }
 
-    void pick_physical_device(vulkan& vulkan) {
-        DD_ASSERT(vulkan.instance != nullptr, "Vulkan instance must be created before picking a physical device");
-        DD_ASSERT(vulkan.surface != nullptr, "Vulkan surface must be created before picking a physical device");
+    void pick_physical_device(Vulkan& vulkan) {
+        GM_ASSERT(vulkan.instance != nullptr, "Vulkan instance must be created before picking a physical device");
+        GM_ASSERT(vulkan.surface != nullptr, "Vulkan surface must be created before picking a physical device");
 
         std::vector<VkPhysicalDevice> available_devices = get_physical_devices(vulkan);
-        DD_ASSERT(!available_devices.empty(), "System must have a physical device");
+        GM_ASSERT(!available_devices.empty(), "System must have a physical device");
 
         std::vector<const char*> required_extensions = {
                 VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
-        #ifdef DD_PLATFORM_MACOS
+        #ifdef GM_PLATFORM_MACOS
             required_extensions.push_back("VK_KHR_portability_subset");
         #endif
         physical_device most_suitable_device = get_most_suitable_physical_device(vulkan, available_devices, required_extensions);
-        DD_ASSERT(most_suitable_device.vk_physical_device != nullptr, "Could not find any suitable physical device");
+        GM_ASSERT(most_suitable_device.vk_physical_device != nullptr, "Could not find any suitable physical device");
 
         vulkan.physical_device = most_suitable_device;
         std::cout << "Picked physical device [" << most_suitable_device.properties.deviceName << "]" << std::endl;
     }
 
-    std::vector<VkPhysicalDevice> get_physical_devices(vulkan& vulkan) {
+    std::vector<VkPhysicalDevice> get_physical_devices(Vulkan& vulkan) {
         uint32_t device_count = 0;
         vkEnumeratePhysicalDevices(vulkan.instance, &device_count, nullptr);
         std::vector<VkPhysicalDevice> devices(device_count);
@@ -35,7 +35,7 @@ namespace dd {
     }
 
     physical_device get_most_suitable_physical_device(
-        vulkan& vulkan,
+        Vulkan& vulkan,
         const std::vector<VkPhysicalDevice>& vk_physical_devices,
         const std::vector<const char*>& required_extensions
     ) {
@@ -53,7 +53,7 @@ namespace dd {
     }
 
     physical_device find_physical_device_info(
-        vulkan& vulkan,
+        Vulkan& vulkan,
         VkPhysicalDevice vk_physical_device,
         const std::vector<const char*>& required_extensions
     ) {
@@ -95,7 +95,7 @@ namespace dd {
         return extensions;
     }
 
-    queue_family_indices find_queue_family_indices(vulkan& vulkan, VkPhysicalDevice physical_device) {
+    queue_family_indices find_queue_family_indices(Vulkan& vulkan, VkPhysicalDevice physical_device) {
         uint32_t queue_family_count = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
 
@@ -120,7 +120,7 @@ namespace dd {
         return indices;
     }
 
-    swap_chain_info find_swap_chain_info(vulkan& vulkan, VkPhysicalDevice physical_device) {
+    swap_chain_info find_swap_chain_info(Vulkan& vulkan, VkPhysicalDevice physical_device) {
         swap_chain_info swap_chain_info;
 
         VkSurfaceKHR surface = vulkan.surface;
@@ -162,23 +162,23 @@ namespace dd {
         const std::vector<const char*>& required_extensions
     ) {
         if (!has_required_features(physical_device.features)) {
-            BL_LOG_DEBUG("[{}] does not have required device features", physical_device.properties.deviceName);
+            GM_LOG_DEBUG("[{}] does not have required device features", physical_device.properties.deviceName);
             return 0;
         }
         if (!has_required_extensions(required_extensions, physical_device.extensions)) {
-            BL_LOG_DEBUG("[{}] does not have required device extensions", physical_device.properties.deviceName);
+            GM_LOG_DEBUG("[{}] does not have required device extensions", physical_device.properties.deviceName);
             return 0;
         }
         if (!has_required_queue_family_indices(physical_device.queue_family_indices)) {
-            BL_LOG_DEBUG("[{}] does not have required queue family indices", physical_device.properties.deviceName);
+            GM_LOG_DEBUG("[{}] does not have required queue family indices", physical_device.properties.deviceName);
             return 0;
         }
         if (!has_required_swap_chain_support(physical_device.swap_chain_info)) {
-            BL_LOG_DEBUG("[{}] does not have required swap chain info", physical_device.properties.deviceName);
+            GM_LOG_DEBUG("[{}] does not have required swap chain info", physical_device.properties.deviceName);
             return 0;
         }
         if (physical_device.depth_format == VK_FORMAT_UNDEFINED) {
-            BL_LOG_DEBUG("[{}] does not have a suitable depth format", physical_device.properties.deviceName);
+            GM_LOG_DEBUG("[{}] does not have a suitable depth format", physical_device.properties.deviceName);
             return 0;
         }
         uint32_t rating = physical_device.properties.limits.maxImageDimension2D;
@@ -201,7 +201,7 @@ namespace dd {
                 }
             }
             if (!extension_found) {
-                BL_LOG_ERROR("Could not find extension [{0}]", extension);
+                GM_LOG_ERROR("Could not find extension [{0}]", extension);
                 return false;
             }
         }

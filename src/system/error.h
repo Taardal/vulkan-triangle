@@ -2,9 +2,9 @@
 
 #include "log.h"
 
-#define DD_THROW(message) throw Error(message, DD_TAG())
+#define GM_THROW(message) throw Error(message, GM_TAG)
 
-#define DD_ASSERT_THROW(expression, message) \
+#define GM_ASSERT_THROW(expression, message) \
     if (expression) {\
         /* Continue */\
     } else {\
@@ -14,19 +14,19 @@
         if (!msg.empty()) {\
             ss << " (" << msg << ")";\
         }\
-        throw Error(ss.str(), DD_TAG());\
+        throw Error(ss.str(), GM_TAG);\
     }
 
-#define DD_EXECUTE_THROW(expression) \
+#define GM_EXECUTE_THROW(expression) \
     try {\
         expression;\
     } catch (const Error& e) { \
-        throw Error(#expression, DD_TAG(), std::make_shared<Error>(e));\
+        throw Error(#expression, GM_TAG, std::make_shared<Error>(e));\
     } catch (const std::exception& e) {\
-        throw Error(#expression, DD_TAG(), std::make_shared<Error>(e.what()));\
+        throw Error(#expression, GM_TAG, std::make_shared<Error>(e.what()));\
     }
 
-namespace dd {
+namespace Game {
     struct StacktraceEntry {
         std::string message;
         std::string tag;

@@ -1,6 +1,6 @@
 #include "event.h"
 
-namespace dd {
+namespace Game {
     Event::Event(EventType type) : type(type), name(getName(type)) {
     }
 
@@ -40,7 +40,7 @@ namespace dd {
     }
 }
 
-namespace dd {
+namespace Game {
     std::ostream& operator<<(std::ostream& os, const Event& event) {
         os << event.toString();
         return os;

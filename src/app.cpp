@@ -1,97 +1,45 @@
 #include "app.h"
-#include "window/event.h"
+#include "graphics/vulkan.h"
 #include "window/key_event.h"
+#include "window/window.h"
 
-namespace dd {
-    app::app(app_config config)
-        : config(std::move(config)),
-          window({
-              .title = config.name,
-              .width = config.window_width,
-              .height = config.window_height,
-              .maximized = config.window_maximized,
-              .resizable = config.window_resizable,
-              .on_event = [this](Event& event) {
-                  process_event(*this, event);
-              },
-          }),
-          vulkan({
-              .application_name = config.name,
-              .engine_name = config.name,
-              .validation_layers_enabled = true,
-              .window = &window,
-          }) {}
+namespace Game {
+    static bool running = true;
 
-    void run(app& app) {
-        initializeErrorSignalHandlers();
-        try {
-            std::cout << "Initializing..." << std::endl;
-            initialize(app);
-            app.initialized = true;
-        } catch (const Error& e) {
-            std::cerr << "Initialization error" << std::endl;
-            e.printStacktrace();
-        } catch (const std::exception& e) {
-            std::cerr << "Initialization error: " << e.what() << std::endl;
+    void on_event(Event& e) {
+        if (e.type == EventType::WindowClose) {
+            running = false;
         }
-        if (app.initialized) {
-            try {
-                std::cout << "Running..." << std::endl;
-                app.running = true;
-                game_loop(app);
-            } catch (const Error& e) {
-                std::cerr << "Runtime error" << std::endl;
-                e.printStacktrace();
-            } catch (const std::exception& e) {
-                std::cerr << "Runtime error: " << e.what() << std::endl;
+        if (e.type == EventType::KeyPressed) {
+            auto& event = (KeyPressedEvent&) e;
+            if (event.key == Key::Escape) {
+                running = false;
             }
         }
-        std::cout << "Terminating..." << std::endl;
-        terminate(app);
     }
 
-    void initialize(app& app) {
-        initialize_glfw(app.window);
-        std::cout << "Initialized GLFW" << std::endl;
+    void run() {
+        Window window = create_window({
+            .title = "App",
+            .width = 1280,
+            .height = 768,
+            .maximized = false,
+            .resizable = true,
+            .on_event = &on_event,
+        });
 
-        initialize_vulkan(app.vulkan);
-        std::cout << "Initialized Vulkan" << std::endl;
-    }
+        Vulkan vulkan = create_vulkan({
+            .application_name = window.config.title,
+            .engine_name = window.config.title,
+            .validation_layers_enabled = true,
+            .window = &window,
+        });
 
-    void terminate(app& app) {
-        terminate_vulkan(app.vulkan);
-        std::cout << "Terminated Vulkan" << std::endl;
-
-        terminate_glfw(app.window);
-        std::cout << "Terminated GLFW" << std::endl;
-    }
-
-    void game_loop(app& app) {
-        constexpr double one_second = 1.0;
-        double last_uptime_seconds = 0.0;
-        start_clock(app.clock);
-        while(app.running) {
-            double uptime_seconds = get_time<sec>(app.clock);
-            double timestep = std::min(uptime_seconds - last_uptime_seconds, one_second);
-            last_uptime_seconds = uptime_seconds;
-            poll_events();
-            if (!app.paused) {
-                update(app, timestep);
-            }
-            render();
+        while (running) {
+            glfwPollEvents();
         }
-    }
 
-    void process_event(app& app, Event& event) {
-        std::cout << "Processing event [" << event << "]" << std::endl;
-        if (event.type == EventType::KeyPressed && event.as<KeyPressedEvent>().key == Key::Escape) {
-           app.running = false;
-        }
-    }
-
-    void update(app& app, double timestep) {
-    }
-
-    void render() {
+        destroy_vulkan(vulkan);
+        destroy_window(window);
     }
 }

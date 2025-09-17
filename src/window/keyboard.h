@@ -2,7 +2,7 @@
 
 #include "window.h"
 
-namespace dd {
+namespace Game {
     enum class Key {
         None = 0,
         A = GLFW_KEY_A,
@@ -75,7 +75,7 @@ namespace dd {
     };
 
     struct KeyboardConfig {
-        window* window = nullptr;
+        Window* window = nullptr;
     };
 
     class Keyboard {

@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
-project(2d-game)
+cmake_minimum_required(VERSION 4.0.2)
+project(game)
 
 # Set C++ version
 set(CMAKE_CXX_STANDARD 23)
@@ -18,8 +18,8 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_DIR_NAME)
 set(bin_dir ${PROJECT_SOURCE_DIR}/bin)
 set(src_dir ${PROJECT_SOURCE_DIR}/src)
 
-add_executable(
-    ${PROJECT_NAME}
+set(
+    sources
     ${src_dir}/main.cpp
     ${src_dir}/app.cpp
     ${src_dir}/app.h
@@ -54,6 +54,7 @@ add_executable(
     ${src_dir}/window/window_event.h
 )
 
+add_executable(${PROJECT_NAME} ${sources})
 target_include_directories(${PROJECT_NAME} PUBLIC ${src_dir})
 target_precompile_headers(${PROJECT_NAME} PUBLIC ${src_dir}/pch.h)
 
@@ -70,31 +71,27 @@ set_target_properties(
 # Dependencies
 # --------------------------------------------------------------------------------------------------------------
 
+include(FetchContent)
+
+# GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-include(FetchContent)
-message("-- Fetching dependencies")
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw
         GIT_TAG 3.4
 )
+FetchContent_MakeAvailable(glfw)
+target_link_libraries(${PROJECT_NAME} glfw)
+
+# SPDLOG
 FetchContent_Declare(
         spdlog
         GIT_REPOSITORY https://github.com/gabime/spdlog
         GIT_TAG v1.9.2
 )
-message("-- Fetching dependencies - done")
-message("-- Compiling dependencies")
-FetchContent_MakeAvailable(
-        glfw
-        spdlog
-)
-message("-- Compiling dependencies - done")
-
-target_link_libraries(${PROJECT_NAME} glfw)
+FetchContent_MakeAvailable(spdlog)
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
 find_package(Vulkan REQUIRED)

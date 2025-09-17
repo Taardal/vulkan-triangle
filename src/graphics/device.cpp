@@ -1,7 +1,7 @@
 #include "device.h"
 #include "vulkan.h"
 
-namespace dd {
+namespace Game {
     VulkanDevice::operator VkDevice() const {
         return device;
     }
@@ -11,8 +11,8 @@ namespace dd {
     }
 }
 
-namespace dd {
-    void create_device(vulkan& vulkan) {
+namespace Game {
+    void create_device(Vulkan& vulkan) {
         const queue_family_indices& queue_family_indices = vulkan.physical_device.queue_family_indices;
         const VkPhysicalDeviceFeatures& enabled_features = vulkan.physical_device.features;
         const std::vector<VkExtensionProperties>& enabled_extensions = vulkan.physical_device.extensions;
@@ -49,23 +49,23 @@ namespace dd {
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.queueCreateInfoCount = (u32) queue_create_infos.size();
 
-        DD_ASSERT_VK_SUCCESS(
-            vkCreateDevice(vulkan.physical_device, &device_create_info, DD_VK_ALLOCATOR, vulkan.device.vk_ptr()),
+        GM_ASSERT_VK_SUCCESS(
+            vkCreateDevice(vulkan.physical_device, &device_create_info, GM_VK_ALLOCATOR, vulkan.device.vk_ptr()),
             "Could not create device"
         );
 
         vulkan.device.graphicsQueue = get_device_queue(vulkan, queue_family_indices.graphics_family.value());
-        DD_ASSERT(vulkan.device.graphicsQueue != nullptr, "Could not get graphics device queue");
+        GM_ASSERT(vulkan.device.graphicsQueue != nullptr, "Could not get graphics device queue");
 
         vulkan.device.presentQueue = get_device_queue(vulkan, queue_family_indices.present_family.value());
-        DD_ASSERT(vulkan.device.presentQueue != nullptr, "Could not get present device queue");
+        GM_ASSERT(vulkan.device.presentQueue != nullptr, "Could not get present device queue");
     }
 
-    void destroy_device(vulkan& vulkan) {
-        vkDestroyDevice(vulkan.device, DD_VK_ALLOCATOR);
+    void destroy_device(Vulkan& vulkan) {
+        vkDestroyDevice(vulkan.device, GM_VK_ALLOCATOR);
     }
 
-    VkQueue get_device_queue(vulkan& vulkan, uint32_t queue_family_index) {
+    VkQueue get_device_queue(Vulkan& vulkan, uint32_t queue_family_index) {
         constexpr uint32_t queue_index = 0;
         VkQueue queue;
         vkGetDeviceQueue(vulkan.device, queue_family_index, queue_index, &queue);

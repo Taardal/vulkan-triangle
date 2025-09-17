@@ -2,9 +2,9 @@
 
 #include <vulkan/vulkan.h>
 
-namespace dd {
+namespace Game {
     // Forward declaration
-    struct vulkan;
+    struct Vulkan;
 
     struct queue_family_indices {
         std::optional<u32> graphics_family;
@@ -29,18 +29,18 @@ namespace dd {
         operator VkPhysicalDevice() const;
     };
 
-    void pick_physical_device(vulkan& vulkan);
+    void pick_physical_device(Vulkan& vulkan);
 
-    std::vector<VkPhysicalDevice> get_physical_devices(vulkan& vulkan);
+    std::vector<VkPhysicalDevice> get_physical_devices(Vulkan& vulkan);
 
     physical_device get_most_suitable_physical_device(
-        vulkan& vulkan,
+        Vulkan& vulkan,
         const std::vector<VkPhysicalDevice>& vk_physical_devices,
         const std::vector<const char*>& required_extensions
     );
 
     physical_device find_physical_device_info(
-        vulkan& vulkan,
+        Vulkan& vulkan,
         VkPhysicalDevice vk_physical_device,
         const std::vector<const char*>& required_extensions
     );
@@ -50,9 +50,9 @@ namespace dd {
         const std::vector<const char*>& required_extensions
     );
 
-    queue_family_indices find_queue_family_indices(vulkan& vulkan, VkPhysicalDevice physical_device);
+    queue_family_indices find_queue_family_indices(Vulkan& vulkan, VkPhysicalDevice physical_device);
 
-    swap_chain_info find_swap_chain_info(vulkan& vulkan, VkPhysicalDevice physical_device);
+    swap_chain_info find_swap_chain_info(Vulkan& vulkan, VkPhysicalDevice physical_device);
 
     VkFormat find_depth_format(VkPhysicalDevice physical_device);
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <numbers>
 
 typedef uint8_t u8;

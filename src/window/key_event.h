@@ -3,7 +3,7 @@
 #include "event.h"
 #include "keyboard.h"
 
-namespace dd {
+namespace Game {
     struct KeyEvent : Event {
     public:
         Key key;
@@ -19,25 +19,25 @@ namespace dd {
     std::ostream& operator<<(std::ostream& os, const KeyEvent& event);
 }
 
-namespace dd {
+namespace Game {
     struct KeyPressedEvent final : KeyEvent {
         explicit KeyPressedEvent(int32_t key, int32_t mods, int32_t scanCode);
     };
 }
 
-namespace dd {
+namespace Game {
     struct KeyReleasedEvent final : KeyEvent {
         explicit KeyReleasedEvent(int32_t key, int32_t mods, int32_t scanCode);
     };
 }
 
-namespace dd {
+namespace Game {
     struct KeyRepeatedEvent final : KeyEvent {
         explicit KeyRepeatedEvent(int32_t key, int32_t mods, int32_t scanCode);
     };
 }
 
-namespace dd {
+namespace Game {
     struct KeyTypedEvent final : KeyEvent {
         explicit KeyTypedEvent(int32_t key, int32_t mods, int32_t scanCode);
     };

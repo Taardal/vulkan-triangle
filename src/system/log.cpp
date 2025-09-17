@@ -1,50 +1,26 @@
 #include "log.h"
 
-namespace dd {
-    std::string tag(const char* filename, const char* functionName, uint32_t lineNumber) {
+namespace Game {
+    void initialize_log(LogLevel level) {
+        set_log_level(level);
+
+        // https://github.com/gabime/spdlog/wiki/Custom-formatting#pattern-flags
+        spdlog::set_pattern("[%Y-%m-%d %H:%M:%S:%e] [%^%l%$] [%s:%#] [%!] %v");
+    }
+
+    void set_log_level(const LogLevel level) {
+        spdlog::set_level(level);
+    }
+
+    std::string tag(const char* file_name, const char* function_name, const int line_number) {
         std::stringstream ss;
-        ss << filename << ":" << lineNumber << " (" << functionName << ")";
+        ss << file_name << ":" << line_number << " (" << function_name << ")";
         return ss.str();
     }
 
-    std::string tag_message(const char* filename, const char* functionName, uint32_t lineNumber, const char* message) {
+    std::string tag_message(const char* file_name, const char* function_name, const int line_number, const std::string_view message) {
         std::stringstream ss;
-        ss << "[" << filename << ":" << lineNumber << "] [" << functionName << "] - " << message;
+        ss << "[" << file_name << ":" << line_number << "] [" << function_name << "] " << message;
         return ss.str();
     }
-
 }
-// namespace dd {
-//     void Log::initialize(LogLevel level) {
-//         spdlog::set_level(getSpdLogLevel(level));
-//     }
-
-//     std::string Log::tag(const char* filename, const char* functionName, uint32_t lineNumber) {
-//         std::stringstream ss;
-//         ss << filename << ":" << lineNumber << " (" << functionName << ")";
-//         return ss.str();
-//     }
-
-//     std::string Log::tagMessage(const char* filename, const char* functionName, uint32_t lineNumber, std::string_view message) {
-//         std::stringstream ss;
-//         ss << "[" << filename << ":" << lineNumber << "] [" << functionName << "] - " << message;
-//         return ss.str();
-//     }
-
-//     spdlog::level::level_enum Log::getSpdLogLevel(LogLevel level) {
-//         switch (level) {
-//             case LogLevel::Critical:
-//                 return spdlog::level::critical;
-//             case LogLevel::Error:
-//                 return spdlog::level::err;
-//             case LogLevel::Warn:
-//                 return spdlog::level::warn;
-//             case LogLevel::Info:
-//                 return spdlog::level::info;
-//             case LogLevel::Debug:
-//                 return spdlog::level::debug;
-//             default:
-//                 return spdlog::level::trace;
-//         }
-//     }
-// }

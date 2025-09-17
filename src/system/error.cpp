@@ -1,7 +1,7 @@
 #include "error.h"
 #include <iomanip>
 
-namespace dd {
+namespace Game {
     Error::Error(const std::string& message, const std::string& tag, const std::shared_ptr<Error>& previousError)
         : message(message), tag(tag), previousError(previousError) {
     }
@@ -32,7 +32,7 @@ namespace dd {
         std::string& errorMessage = stack[0].message;
 
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
-        fprintf(stderr, "[%s] %s\n", DD_TO_STRING(dd::Error), errorMessage.c_str());
+        fprintf(stderr, "[%s] %s\n", GM_TO_STRING(dd::Error), errorMessage.c_str());
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
 
         uint32_t longestTagLength = 0;
@@ -65,7 +65,7 @@ namespace dd {
         std::string& errorMessage = stack[0].message;
 
         os << "--------------------------------------------------------------------------------------------------------------\n";
-        os << "[" << DD_TO_STRING(dd::Error) << "] " << errorMessage.c_str() << "\n";
+        os << "[" << GM_TO_STRING(dd::Error) << "] " << errorMessage.c_str() << "\n";
         os << "--------------------------------------------------------------------------------------------------------------\n";
 
         uint32_t longestTagLength = 0;
