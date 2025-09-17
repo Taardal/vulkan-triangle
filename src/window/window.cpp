@@ -6,33 +6,35 @@
 
 namespace dd {
 
-    window::window(const window_config& config) : config(std::move(config)) {
-        DD_ASSERT_THROW(glfwInit());
+    void initialize_glfw(window& window) {
+        DD_ASSERT(glfwInit(), "Could not initialize GLFW");
 
-        glfwSetErrorCallback(on_error);
+        glfwSetErrorCallback(on_glfw_error);
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, config.resizable);
-        glfwWindowHint(GLFW_MAXIMIZED, config.maximized);
+        glfwWindowHint(GLFW_RESIZABLE, window.config.resizable);
+        glfwWindowHint(GLFW_MAXIMIZED, window.config.maximized);
 
-        GLFWmonitor* fullscreenMonitor = nullptr;
-        GLFWwindow* sharedWindow = nullptr;
-        glfwWindow = glfwCreateWindow(
-            config.width,
-            config.height,
-            config.title.c_str(),
-            fullscreenMonitor,
-            sharedWindow
+        GLFWmonitor* fullscreen_monitor = nullptr;
+        GLFWwindow* shared_window = nullptr;
+        GLFWwindow* glfw_window = glfwCreateWindow(
+            window.config.width,
+            window.config.height,
+            window.config.title.c_str(),
+            fullscreen_monitor,
+            shared_window
         );
-        DD_ASSERT_THROW(glfwWindow != nullptr);
+        DD_ASSERT(glfw_window != nullptr, "Could not create GLFW window");
 
-        glfwSetWindowUserPointer(glfwWindow, this);
-        glfwSetKeyCallback(glfwWindow, on_key);
-        glfwSetWindowCloseCallback(glfwWindow, on_window_close);
+        glfwSetWindowUserPointer(glfw_window, &window);
+        glfwSetKeyCallback(glfw_window, on_glfw_key_change_event);
+        glfwSetWindowCloseCallback(glfw_window, on_glfw_window_close_event);
+
+        window.glfw_window = glfw_window;
     }
 
-    window::~window() {
-        glfwDestroyWindow(glfwWindow);
+    void terminate_glfw(window& window) {
+        glfwDestroyWindow(window.glfw_window);
         glfwTerminate();
     }
 
@@ -40,31 +42,30 @@ namespace dd {
         glfwPollEvents();
     }
 
-    void on_error(int32_t error, const char* description) {
+    void on_glfw_error(int32_t error, const char* description) {
        std::cerr << "GLFW error: [" << error << "]" << description << std::endl;
     }
 
-    void on_key(GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods) {
+    void on_glfw_key_change_event(GLFWwindow* glfw_window, int32_t key, int32_t scan_code, int32_t action, int32_t mods) {
         if (action == GLFW_PRESS) {
-            KeyPressedEvent event(key, mods, scanCode);
-            send_window_event(event, glfwWindow);
+            KeyPressedEvent event(key, mods, scan_code);
+            on_glfw_event(event, glfw_window);
         } else if (action == GLFW_RELEASE) {
-            KeyReleasedEvent event(key, mods, scanCode);
-            send_window_event(event, glfwWindow);
+            KeyReleasedEvent event(key, mods, scan_code);
+            on_glfw_event(event, glfw_window);
         } else if (action == GLFW_REPEAT) {
-            KeyRepeatedEvent event(key, mods, scanCode);
-            send_window_event(event, glfwWindow);
+            KeyRepeatedEvent event(key, mods, scan_code);
+            on_glfw_event(event, glfw_window);
         }
     }
 
-    void on_window_close(GLFWwindow* glfwWindow) {
+    void on_glfw_window_close_event(GLFWwindow* glfw_window) {
         WindowCloseEvent event{};
-        send_window_event(event, glfwWindow);
+        on_glfw_event(event, glfw_window);
     }
 
-    void send_window_event(Event& event, GLFWwindow* glfwWindow) {
-        DD_LOG_TRACE(event.toString());
-        auto w = (window*) glfwGetWindowUserPointer(glfwWindow);
+    void on_glfw_event(Event& event, GLFWwindow* glfw_window) {
+        auto w = (window*) glfwGetWindowUserPointer(glfw_window);
         w->config.on_event(event);
     }
 }

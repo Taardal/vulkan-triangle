@@ -4,11 +4,17 @@
 
 #define DD_THROW(message) throw Error(message, DD_TAG())
 
-#define DD_ASSERT_THROW(expression) \
+#define DD_ASSERT_THROW(expression, message) \
     if (expression) {\
         /* Continue */\
     } else {\
-        throw Error(std::string("Assertion failed: ") + #expression, DD_TAG());\
+        std::stringstream ss;\
+        ss << "Assertion failed: " << #expression;\
+        std::string msg(message);\
+        if (!msg.empty()) {\
+            ss << " (" << msg << ")";\
+        }\
+        throw Error(ss.str(), DD_TAG());\
     }
 
 #define DD_EXECUTE_THROW(expression) \

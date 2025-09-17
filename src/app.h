@@ -1,5 +1,6 @@
 #pragma once
 
+#include "graphics/vulkan.h"
 #include "system/clock.h"
 #include "window/window.h"
 #include "window/event.h"
@@ -15,18 +16,21 @@ namespace dd {
 
     struct app {
        app_config config;
+       window window;
+       vulkan vulkan;
+       clock clock;
        bool initialized = false;
        bool running = false;
        bool paused = false;
-       clock clock{};
-       window* window = nullptr;
+
+       explicit app(app_config config);
     };
 
-    void run_app(const app_config& config);
+    void run(app& app);
 
-    void initialize_app(app& app);
+    void initialize(app& app);
 
-    void terminate_app(app& app);
+    void terminate(app& app);
 
     void game_loop(app& app);
 

@@ -23,6 +23,13 @@ add_executable(
     ${src_dir}/main.cpp
     ${src_dir}/app.cpp
     ${src_dir}/app.h
+    ${src_dir}/graphics/device.cpp
+    ${src_dir}/graphics/device.h
+    ${src_dir}/graphics/physical_device.cpp
+    ${src_dir}/graphics/physical_device.h
+    ${src_dir}/graphics/vulkan.cpp
+    ${src_dir}/graphics/vulkan.h
+    ${src_dir}/system/assert.cpp
     ${src_dir}/system/assert.h
     ${src_dir}/system/environment.h
     ${src_dir}/system/error.cpp

@@ -21,11 +21,15 @@
 #endif
 
 #ifdef DD_ENABLE_ASSERT
-    #define DD_ASSERT(expression) \
+    namespace dd {
+        void print_assert_error(std::string_view tag, std::string_view expression, std::string_view message);
+    }
+
+    #define DD_ASSERT(expression, message) \
             if (expression) {\
                 /* Continue */\
             } else {\
-                DD_LOG_CRITICAL("Assertion failed: {}", #expression); \
+                ::dd::print_assert_error(DD_TAG(), #expression, message);\
                 DD_BREAK(); \
             }
 #else

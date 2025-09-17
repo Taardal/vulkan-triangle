@@ -1,51 +1,69 @@
 #include "app.h"
-#include "spdlog/common.h"
-#include "spdlog/logger.h"
-#include "spdlog/spdlog.h"
 #include "window/event.h"
 #include "window/key_event.h"
 
 namespace dd {
-    void run_app(const app_config& config) {
-        app app({
-            .config = std::move(config),
-        });
+    app::app(app_config config)
+        : config(std::move(config)),
+          window({
+              .title = config.name,
+              .width = config.window_width,
+              .height = config.window_height,
+              .maximized = config.window_maximized,
+              .resizable = config.window_resizable,
+              .on_event = [this](Event& event) {
+                  process_event(*this, event);
+              },
+          }),
+          vulkan({
+              .application_name = config.name,
+              .engine_name = config.name,
+              .validation_layers_enabled = true,
+              .window = &window,
+          }) {}
+
+    void run(app& app) {
+        initializeErrorSignalHandlers();
         try {
-            initialize_app(app);
+            std::cout << "Initializing..." << std::endl;
+            initialize(app);
             app.initialized = true;
+        } catch (const Error& e) {
+            std::cerr << "Initialization error" << std::endl;
+            e.printStacktrace();
         } catch (const std::exception& e) {
             std::cerr << "Initialization error: " << e.what() << std::endl;
-            app.initialized = false;
         }
         if (app.initialized) {
             try {
+                std::cout << "Running..." << std::endl;
                 app.running = true;
                 game_loop(app);
+            } catch (const Error& e) {
+                std::cerr << "Runtime error" << std::endl;
+                e.printStacktrace();
             } catch (const std::exception& e) {
                 std::cerr << "Runtime error: " << e.what() << std::endl;
-                app.running = false;
             }
         }
-        terminate_app(app);
+        std::cout << "Terminating..." << std::endl;
+        terminate(app);
     }
 
-    void initialize_app(app& app) {
-        app.window = new window({
-            .title = app.config.name,
-            .width = app.config.window_width,
-            .height = app.config.window_height,
-            .maximized = app.config.window_maximized,
-            .resizable = app.config.window_resizable,
-            .on_event = [&app](Event& event) {
-                process_event(app, event);
-            },
-        });
-        std::cout << "Created window" << std::endl;
+    void initialize(app& app) {
+        initialize_glfw(app.window);
+        std::cout << "Initialized GLFW" << std::endl;
+
+        initialize_vulkan(app.vulkan);
+        std::cout << "Initialized Vulkan" << std::endl;
     }
 
-    void terminate_app(app& app) {
-        delete app.window;
-        std::cout << "Destroyed window" << std::endl;
+    void terminate(app& app) {
+        terminate_vulkan(app.vulkan);
+        std::cout << "Terminated Vulkan" << std::endl;
+
+        terminate_glfw(app.window);
+        std::cout << "Terminated GLFW" << std::endl;
     }
 
     void game_loop(app& app) {

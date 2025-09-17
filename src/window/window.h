@@ -2,6 +2,8 @@
 
 #include "window/event.h"
 
+// Vulkan must be included before GLFW
+#include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 
 namespace dd {
@@ -16,20 +18,22 @@ namespace dd {
 
     struct window {
         window_config config;
-        GLFWwindow* glfwWindow = nullptr;
+        GLFWwindow* glfw_window = nullptr;
 
-        window(const window_config& config);
-
-        ~window();
+        window(window_config config) : config(std::move(config)) {}
     };
+
+    void initialize_glfw(window& window);
+
+    void terminate_glfw(window& window);
 
     void poll_events();
 
-    void on_error(int32_t error, const char* description);
+    void on_glfw_error(int32_t error, const char* description);
 
-    void on_key(GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods);
+    void on_glfw_key_change_event(GLFWwindow* glfwWindow, int32_t key, int32_t scanCode, int32_t action, int32_t mods);
 
-    void on_window_close(GLFWwindow* glfwWindow);
+    void on_glfw_window_close_event(GLFWwindow* glfwWindow);
 
-    void send_window_event(Event& event, GLFWwindow* glfwWindow);
+    void on_glfw_event(Event& event, GLFWwindow* glfwWindow);
 }

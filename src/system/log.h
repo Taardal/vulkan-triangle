@@ -27,12 +27,19 @@ namespace dd {
     std::string tag_message(const char* filename, const char* functionName, uint32_t lineNumber, const char* message);
 }
 
-#define DD_LOG_TRACE(message, ...)
-#define DD_LOG_DEBUG(message, ...)
-#define DD_LOG_INFO(message, ...)
-#define DD_LOG_WARN(message, ...)
-#define DD_LOG_ERROR(message, ...)
-#define DD_LOG_CRITICAL(message, ...)
+#define DD_LOG_TRACE(message, ...)  std::cout << message << std::endl;
+#define DD_LOG_DEBUG(message, ...) std::cout << message << std::endl;
+#define DD_LOG_INFO(message, ...) std::cout << message << std::endl;
+#define DD_LOG_WARN(message, ...) std::cout << message << std::endl;
+#define DD_LOG_ERROR(message, ...) std::cerr << message << std::endl;
+#define DD_LOG_CRITICAL(message, ...) std::err << message << std::endl;
+
+#define BL_LOG_TRACE(message, ...)  std::cout << message << std::endl;
+#define BL_LOG_DEBUG(message, ...) std::cout << message << std::endl;
+#define BL_LOG_INFO(message, ...) std::cout << message << std::endl;
+#define BL_LOG_WARN(message, ...) std::cout << message << std::endl;
+#define BL_LOG_ERROR(message, ...) std::cerr << message << std::endl;
+#define BL_LOG_CRITICAL(message, ...) std::err << message << std::endl;
 
 // namespace dd {
 //     enum class LogLevel {

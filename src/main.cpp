@@ -1,7 +1,10 @@
 #include "app.h"
 
+using namespace dd;
+
 int main() {
-    dd::run_app({
+    app app({
         .name = "2D game",
     });
+    run(app);
 }

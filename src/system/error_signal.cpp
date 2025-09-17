@@ -4,7 +4,6 @@ namespace dd {
     void initializeErrorSignalHandlers() {
         signal(SIGHUP, handleErrorSignal);  // Hangup
         signal(SIGILL, handleErrorSignal);  // Illegal instruction
-        signal(SIGTRAP, handleErrorSignal); // Trace trap
         signal(SIGABRT, handleErrorSignal); // Abort
         signal(SIGEMT, handleErrorSignal);  // EMT instruction, system-specific
         signal(SIGFPE, handleErrorSignal);  // Floating-point exception
@@ -29,9 +28,9 @@ namespace dd {
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
         fprintf(stderr, "[%s] %s\n", name.c_str(), description.c_str());
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
-#if defined(BL_PRINT_UNIX_STACKTRACE)
+#if defined(DD_PRINT_UNIX_STACKTRACE)
         printUnixStacktrace();
-#elif defined(BL_PRINT_WINDOWS_STACKTRACE)
+#elif defined(DD_PRINT_WINDOWS_STACKTRACE)
         fprintf(stderr, "Could not print stacktrace for Windows, not implemented\n");
 #else
         fprintf(stderr, "Could not print stacktrace, unsupported platform\n");
@@ -116,7 +115,7 @@ namespace dd {
         }
     }
 
-#ifdef BL_PRINT_UNIX_STACKTRACE
+#ifdef DD_PRINT_UNIX_STACKTRACE
 
 #include <cxxabi.h>
 #include <execinfo.h>

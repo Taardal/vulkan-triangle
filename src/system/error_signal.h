@@ -2,10 +2,10 @@
 
 #include "environment.h"
 
-#if defined(BL_PLATFORM_MACOS) || defined(BL_PLATFORM_LINUX)
-    #define BL_PRINT_UNIX_STACKTRACE
-#elif defined(BL_PLATFORM_WINDOWS)
-    #define BL_PRINT_WINDOWS_STACKTRACE
+#if defined(DD_PLATFORM_MACOS) || defined(DD_PLATFORM_LINUX)
+    #define DD_PRINT_UNIX_STACKTRACE
+    #elif defined(DD_PLATFORM_WINDOWS)
+    #define DD_PRINT_WINDOWS_STACKTRACE
 #endif
 
 namespace dd {
@@ -19,7 +19,7 @@ namespace dd {
 
     std::string getSignalDescription(int signal);
 
-#ifdef BL_PRINT_UNIX_STACKTRACE
+#ifdef DD_PRINT_UNIX_STACKTRACE
     void printUnixStacktrace();
 
     void demangleUnixStacktraceLine(std::string* stacktraceLine);

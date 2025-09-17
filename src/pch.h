@@ -1,11 +1,15 @@
 #pragma once
 
 // Standard library
+#include <algorithm>
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <map>
+#include <set>
 #include <string>
 #include <sstream>
+#include <vector>
 
 // App
 #include "system/assert.h"
