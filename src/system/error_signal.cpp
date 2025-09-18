@@ -1,35 +1,35 @@
 #include "error_signal.h"
 
 namespace Game {
-    void initializeErrorSignalHandlers() {
-        signal(SIGHUP, handleErrorSignal);  // Hangup
-        signal(SIGILL, handleErrorSignal);  // Illegal instruction
-        signal(SIGABRT, handleErrorSignal); // Abort
-        signal(SIGEMT, handleErrorSignal);  // EMT instruction, system-specific
-        signal(SIGFPE, handleErrorSignal);  // Floating-point exception
-        signal(SIGKILL, handleErrorSignal); // Kill, cannot be caught or ignored
-        signal(SIGBUS, handleErrorSignal);  // Bus error
-        signal(SIGSEGV, handleErrorSignal); // Segmentation violation
-        signal(SIGSYS, handleErrorSignal);  // Bad argument to system call
-        signal(SIGPIPE, handleErrorSignal); // Write on a pipe with no reader
-        signal(SIGALRM, handleErrorSignal); // Alarm clock
-        signal(SIGXCPU, handleErrorSignal); // Exceeded CPU time limit
-        signal(SIGXFSZ, handleErrorSignal); // Exceeded file size limit
+    void initialize_error_signal_handlers() {
+        signal(SIGHUP, handle_error_signal);  // Hangup
+        signal(SIGILL, handle_error_signal);  // Illegal instruction
+        signal(SIGABRT, handle_error_signal); // Abort
+        signal(SIGEMT, handle_error_signal);  // EMT instruction, system-specific
+        signal(SIGFPE, handle_error_signal);  // Floating-point exception
+        signal(SIGKILL, handle_error_signal); // Kill, cannot be caught or ignored
+        signal(SIGBUS, handle_error_signal);  // Bus error
+        signal(SIGSEGV, handle_error_signal); // Segmentation violation
+        signal(SIGSYS, handle_error_signal);  // Bad argument to system call
+        signal(SIGPIPE, handle_error_signal); // Write on a pipe with no reader
+        signal(SIGALRM, handle_error_signal); // Alarm clock
+        signal(SIGXCPU, handle_error_signal); // Exceeded CPU time limit
+        signal(SIGXFSZ, handle_error_signal); // Exceeded file size limit
     }
 
-    void handleErrorSignal(int signal) {
-        printStacktrace(signal);
+    void handle_error_signal(int signal) {
+        print_stacktrace(signal);
         exit(signal);
     }
 
-    void printStacktrace(int signal) {
-        std::string name = getSignalName(signal);
-        std::string description = getSignalDescription(signal);
+    void print_stacktrace(int signal) {
+        std::string name = get_signal_name(signal);
+        std::string description = get_signal_description(signal);
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
         fprintf(stderr, "[%s] %s\n", name.c_str(), description.c_str());
         fprintf(stderr, "--------------------------------------------------------------------------------------------------------------\n");
 #if defined(GM_PRINT_UNIX_STACKTRACE)
-        printUnixStacktrace();
+        print_unix_stacktrace();
 #elif defined(GM_PRINT_WINDOWS_STACKTRACE)
         fprintf(stderr, "Could not print stacktrace for Windows, not implemented\n");
 #else
@@ -37,7 +37,7 @@ namespace Game {
 #endif
     }
 
-    std::string getSignalName(const int signal) {
+    std::string get_signal_name(const int signal) {
         switch (signal) {
             case SIGHUP:
                 return "SIGHUP";
@@ -76,7 +76,7 @@ namespace Game {
         }
     }
 
-    std::string getSignalDescription(int signal) {
+    std::string get_signal_description(int signal) {
         switch (signal) {
             case SIGHUP:
                 return "Hangup. Typically sent to a process when its controlling terminal is closed. Often used to reload configurations.";
@@ -117,7 +117,7 @@ namespace Game {
 
 #ifdef GM_PRINT_UNIX_STACKTRACE
 
-    void printUnixStacktrace() {
+    void print_unix_stacktrace() {
         // Number of stacktrace lines to be printed
         constexpr int maxStackSize = 20;
 
@@ -156,7 +156,7 @@ namespace Game {
         bool sigtrampLineFound = false;
         for (int i = 0; i < stackSize; i++) {
             ::std::string stacktraceLine(stacktrace[i]);
-            demangleUnixStacktraceLine(&stacktraceLine);
+            demangle_unix_stacktrace_line(&stacktraceLine);
             if (sigtrampLineFound) {
                 fprintf(stderr, "%s\n", stacktraceLine.c_str());
             } else if (stacktraceLine.find("_sigtramp") != ::std::string::npos) {
@@ -180,7 +180,7 @@ namespace Game {
     //
     // Segments:
     //   [stack index]  [binary name]  [return address (in hexadecimal)]  [function name] + [offset into the function (in hexadecimal)]
-    void demangleUnixStacktraceLine(::std::string* stacktraceLine) {
+    void demangle_unix_stacktrace_line(::std::string* stacktraceLine) {
 
         // Find segment before the mangled function name
         size_t returnAddressStartIndex = stacktraceLine->find("0x");

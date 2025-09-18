@@ -1,45 +1,37 @@
 #include "app.h"
-#include "graphics/vulkan.h"
-#include "window/key_event.h"
-#include "window/window.h"
 
 namespace Game {
-    static bool running = true;
+    App create_app(const AppConfig& config) {
+        App app{};
 
-    void on_event(Event& e) {
-        if (e.type == EventType::WindowClose) {
-            running = false;
-        }
-        if (e.type == EventType::KeyPressed) {
-            auto& event = (KeyPressedEvent&) e;
-            if (event.key == Key::Escape) {
-                running = false;
-            }
-        }
+        app.window = create_window({
+            .title = config.title,
+            .width = config.width,
+            .height = config.height,
+            .maximized = config.maximized,
+            .resizable = true,
+        });
+
+        app.vulkan = create_vulkan({
+            .application_name = app.window.config.title,
+            .engine_name = app.window.config.title,
+            .validation_layers_enabled = true,
+            .window = &app.window,
+        });
+
+        return app;
     }
 
-    void run() {
-        Window window = create_window({
-            .title = "App",
-            .width = 1280,
-            .height = 768,
-            .maximized = false,
-            .resizable = true,
-            .on_event = &on_event,
-        });
+    void destroy_app(App& app) {
+        destroy_vulkan(app.vulkan);
+        destroy_window(app.window);
+    }
 
-        Vulkan vulkan = create_vulkan({
-            .application_name = window.config.title,
-            .engine_name = window.config.title,
-            .validation_layers_enabled = true,
-            .window = &window,
-        });
+    void start(App& app) {
+        app.running = true;
+    }
 
-        while (running) {
-            glfwPollEvents();
-        }
-
-        destroy_vulkan(vulkan);
-        destroy_window(window);
+    void stop(App& app) {
+        app.running = false;
     }
 }

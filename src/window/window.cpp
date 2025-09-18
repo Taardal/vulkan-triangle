@@ -5,6 +5,33 @@
 #include <GLFW/glfw3.h>
 
 namespace Game {
+    void on_glfw_error(i32 error, const char* description) {
+        std::cerr << "GLFW error: [" << error << "]" << description << std::endl;
+    }
+
+    void on_glfw_event(Event& event, GLFWwindow* glfw_window) {
+        auto window = (Window*) glfwGetWindowUserPointer(glfw_window);
+        window->on_event(event);
+    }
+
+    void on_glfw_key_change_event(GLFWwindow* glfw_window, i32 key, i32 scan_code, i32 action, i32 mods) {
+        if (action == GLFW_PRESS) {
+            KeyPressedEvent event(key, mods, scan_code);
+            on_glfw_event(event, glfw_window);
+        } else if (action == GLFW_RELEASE) {
+            KeyReleasedEvent event(key, mods, scan_code);
+            on_glfw_event(event, glfw_window);
+        } else if (action == GLFW_REPEAT) {
+            KeyRepeatedEvent event(key, mods, scan_code);
+            on_glfw_event(event, glfw_window);
+        }
+    }
+
+    void on_glfw_window_close_event(GLFWwindow* glfw_window) {
+        WindowCloseEvent event{};
+        on_glfw_event(event, glfw_window);
+    }
+
     Window create_window(const WindowConfig& config) {
         Window window{};
         window.config = config;
@@ -32,7 +59,6 @@ namespace Game {
             GM_THROW("Could not create GLFW window");
         }
 
-        glfwSetWindowUserPointer(window.glfw_window, &window);
         glfwSetKeyCallback(window.glfw_window, on_glfw_key_change_event);
         glfwSetWindowCloseCallback(window.glfw_window, on_glfw_window_close_event);
 
@@ -44,30 +70,8 @@ namespace Game {
         glfwTerminate();
     }
 
-    void on_glfw_error(i32 error, const char* description) {
-       std::cerr << "GLFW error: [" << error << "]" << description << std::endl;
-    }
-
-    void on_glfw_key_change_event(GLFWwindow* glfw_window, i32 key, i32 scan_code, i32 action, i32 mods) {
-        if (action == GLFW_PRESS) {
-            KeyPressedEvent event(key, mods, scan_code);
-            on_glfw_event(event, glfw_window);
-        } else if (action == GLFW_RELEASE) {
-            KeyReleasedEvent event(key, mods, scan_code);
-            on_glfw_event(event, glfw_window);
-        } else if (action == GLFW_REPEAT) {
-            KeyRepeatedEvent event(key, mods, scan_code);
-            on_glfw_event(event, glfw_window);
-        }
-    }
-
-    void on_glfw_window_close_event(GLFWwindow* glfw_window) {
-        WindowCloseEvent event{};
-        on_glfw_event(event, glfw_window);
-    }
-
-    void on_glfw_event(Event& event, GLFWwindow* glfw_window) {
-        auto window = (Window*) glfwGetWindowUserPointer(glfw_window);
-        window->config.on_event(event);
+    void set_window_event_listener(Window& window, const std::function<void(Event&)>& on_event) {
+        window.on_event = on_event;
+        glfwSetWindowUserPointer(window, &window);
     }
 }

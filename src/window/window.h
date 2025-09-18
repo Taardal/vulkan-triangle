@@ -9,12 +9,12 @@ namespace Game {
         i32 height = 600;
         bool maximized = false;
         bool resizable = true;
-        std::function<void(Event&)> on_event;
     };
 
     struct Window {
-        WindowConfig config;
+        WindowConfig config{};
         GLFWwindow* glfw_window = nullptr;
+        std::function<void(Event&)> on_event;
 
         operator GLFWwindow*() const {
             return glfw_window;
@@ -25,11 +25,5 @@ namespace Game {
 
     void destroy_window(const Window& window);
 
-    void on_glfw_error(i32 error, const char* description);
-
-    void on_glfw_key_change_event(GLFWwindow* glfwWindow, i32 key, i32 scanCode, i32 action, i32 mods);
-
-    void on_glfw_window_close_event(GLFWwindow* glfwWindow);
-
-    void on_glfw_event(Event& event, GLFWwindow* glfwWindow);
+    void set_window_event_listener(Window& window, const std::function<void(Event&)>& on_event);
 }

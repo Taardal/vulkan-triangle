@@ -23,6 +23,10 @@ set(
     ${src_dir}/main.cpp
     ${src_dir}/app.cpp
     ${src_dir}/app.h
+    ${src_dir}/game_loop.cpp
+    ${src_dir}/game_loop.h
+    ${src_dir}/run.cpp
+    ${src_dir}/run.h
     ${src_dir}/graphics/device.cpp
     ${src_dir}/graphics/device.h
     ${src_dir}/graphics/physical_device.cpp
@@ -42,6 +46,8 @@ set(
     ${src_dir}/system/log.h
     ${src_dir}/system/numbers.h
     ${src_dir}/system/ref.h
+    ${src_dir}/system/time.cpp
+    ${src_dir}/system/time.h
     ${src_dir}/window/event.cpp
     ${src_dir}/window/event.h
     ${src_dir}/window/keyboard.cpp

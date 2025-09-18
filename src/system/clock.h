@@ -1,30 +1,47 @@
 #pragma once
 
-#include <chrono>
+#include "time.h"
 
 namespace Game {
+    class Clock {
+    private:
+        Nanoseconds elapsed_ns;
+        f32 time_scale = 1.0f;
+        bool paused = false;
 
-    typedef std::chrono::high_resolution_clock::time_point time;
-    typedef std::chrono::high_resolution_clock::duration duration;
+    public:
+        explicit Clock(f64 seconds = 0.0);
 
-    typedef std::chrono::nanoseconds ns;
-    typedef std::chrono::milliseconds ms;
-    typedef std::chrono::seconds sec;
+        Nanoseconds elapsed() const;
 
-    struct clock {
-        time start_time;
+        template<typename Duration>
+        Duration elapsed() const {
+            return Time::as<Duration>(elapsed());
+        }
+
+        Nanoseconds delta(const Clock& other) const;
+
+        template<typename Duration>
+        Duration delta(const Clock& other) const {
+            return Time::as<Duration>(delta(other));
+        }
+
+        void tick(f64 timestep);
+
+        template<typename Duration = Nanoseconds>
+        void tick(Duration duration) {
+            if (paused) {
+                return;
+            }
+            elapsed_ns += Time::as<Nanoseconds>(duration * time_scale);
+        }
+
+        f32 get_time_scale() const;
+
+        void set_time_scale(f32 time_scale);
+
+        bool is_paused() const;
+
+        void set_paused(bool paused);
     };
-
-    void start_clock(clock& clock);
-
-    template<typename T = duration>
-    f64 to_duration(const duration& time) {
-        return std::chrono::duration_cast<T>(time).count();
-    }
-
-    template<typename T = duration>
-    f64 get_time(const clock& clock) {
-        time now = std::chrono::high_resolution_clock::now();
-        return to_duration<T>(now - clock.start_time);
-    }
 }

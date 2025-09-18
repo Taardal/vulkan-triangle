@@ -11,19 +11,19 @@
 #endif
 
 namespace Game {
-    void initializeErrorSignalHandlers();
+    void initialize_error_signal_handlers();
 
-    void handleErrorSignal(int signal);
+    void handle_error_signal(int signal);
 
-    void printStacktrace(int signal);
+    void print_stacktrace(int signal);
 
-    std::string getSignalName(int signal);
+    std::string get_signal_name(int signal);
 
-    std::string getSignalDescription(int signal);
+    std::string get_signal_description(int signal);
 
 #ifdef GM_PRINT_UNIX_STACKTRACE
-    void printUnixStacktrace();
+    void print_unix_stacktrace();
 
-    void demangleUnixStacktraceLine(std::string* stacktraceLine);
+    void demangle_unix_stacktrace_line(std::string* stacktraceLine);
 #endif
 }
