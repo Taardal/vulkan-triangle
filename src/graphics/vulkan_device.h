@@ -9,6 +9,7 @@ namespace Game {
     };
 
     struct DeviceConfig {
+        std::string name = "Device";
         PhysicalDevice* physical_device = nullptr;
     };
 
@@ -31,7 +32,9 @@ namespace Game {
         }
     };
 
-    Device create_device(const DeviceConfig& config);
+    Device create_vulkan_device(const DeviceConfig& config);
 
-    void destroy_device(const Device& device);
+    void destroy_vulkan_device(const Device& device);
+
+    void set_vulkan_object_name(const Device& device, void* object, VkObjectType object_type, const char* object_name);
 }

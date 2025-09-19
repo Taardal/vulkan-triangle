@@ -20,11 +20,11 @@ namespace Game {
             .window = config.window,
         });
 
-        vulkan.physical_device = pick_physical_device({
+        vulkan.physical_device = pick_vulkan_physical_device({
             .vulkan_instance = &vulkan.instance,
         });
 
-        vulkan.device = create_device({
+        vulkan.device = create_vulkan_device({
             .physical_device = &vulkan.physical_device,
         });
 
@@ -32,7 +32,7 @@ namespace Game {
     }
 
     void destroy_vulkan(const Vulkan& vulkan) {
-        destroy_device(vulkan.device);
+        destroy_vulkan_device(vulkan.device);
         destroy_vulkan_instance(vulkan.instance);
     }
 }

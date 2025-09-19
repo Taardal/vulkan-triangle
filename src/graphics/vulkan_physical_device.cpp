@@ -1,5 +1,4 @@
 #include "vulkan_physical_device.h"
-#include "vulkan.h"
 
 namespace Game {
     std::vector<const char*> get_required_extensions() {
@@ -209,7 +208,7 @@ namespace Game {
         return devices;
     }
 
-    PhysicalDevice pick_physical_device(const PhysicalDeviceConfig& config) {
+    PhysicalDevice pick_vulkan_physical_device(const PhysicalDeviceConfig& config) {
         GM_ASSERT(config.vulkan_instance->instance, "Vulkan instance must be created before picking a physical device");
         GM_ASSERT(config.vulkan_instance->surface, "Vulkan surface must be created before picking a physical device");
 

@@ -25,6 +25,23 @@ namespace Game {
         destroy_debug_messenger_fn(instance, instance.debug_messenger, GM_VK_ALLOCATOR);
     }
 
+    std::string get_debug_message_type_name(VkDebugUtilsMessageTypeFlagsEXT message_type_flags) {
+        std::string message_type_name;
+        if (message_type_flags & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) {
+            message_type_name += "GENERAL | ";
+        }
+        if (message_type_flags & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
+            message_type_name += "VALIDATION | ";
+        }
+        if (message_type_flags & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
+            message_type_name += "PERFORMANCE | ";
+        }
+        if (!message_type_name.empty()) {
+            message_type_name.erase(message_type_name.size() - 3); // Trim trailing " | "
+        }
+        return message_type_name;
+    }
+
     VKAPI_ATTR VkBool32 VKAPI_CALL on_debug_message(
         VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
         VkDebugUtilsMessageTypeFlagsEXT message_type,
@@ -32,13 +49,13 @@ namespace Game {
         void* user_data
     ) {
         if (message_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-            GM_LOG_ERROR(callback_data->pMessage);
+            GM_LOG_ERROR("[{}] {}", get_debug_message_type_name(message_type), callback_data->pMessage);
         } else if (message_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-            GM_LOG_WARNING(callback_data->pMessage);
+            GM_LOG_WARNING("[{}] {}", get_debug_message_type_name(message_type), callback_data->pMessage);
         } else if (message_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-            GM_LOG_INFO(callback_data->pMessage);
+            GM_LOG_INFO("[{}] {}", get_debug_message_type_name(message_type), callback_data->pMessage);
         } else {
-            GM_LOG_TRACE(callback_data->pMessage);
+            GM_LOG_TRACE("[{}] {}", get_debug_message_type_name(message_type), callback_data->pMessage);
         }
         return VK_FALSE;
     }
@@ -209,7 +226,7 @@ namespace Game {
         if (vulkan_instance.surface) {
             destroy_surface(vulkan_instance);
         }
-        if (vulkan_instance.config.validation_layers_enabled) {
+        if (vulkan_instance.debug_messenger) {
             destroy_debug_messenger(vulkan_instance);
         }
         if (vulkan_instance.instance) {

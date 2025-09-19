@@ -41,5 +41,5 @@ namespace Game {
         }
     };
 
-    PhysicalDevice pick_physical_device(const PhysicalDeviceConfig& config);
+    PhysicalDevice pick_vulkan_physical_device(const PhysicalDeviceConfig& config);
 }

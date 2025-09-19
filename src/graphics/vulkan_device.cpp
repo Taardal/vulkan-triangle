@@ -1,5 +1,4 @@
 #include "vulkan_device.h"
-#include "vulkan.h"
 
 namespace Game {
     VkQueue get_device_queue(VkDevice device, uint32_t queue_family_index) {
@@ -9,7 +8,7 @@ namespace Game {
         return queue;
     }
 
-    Device create_device(const DeviceConfig& config) {
+    Device create_vulkan_device(const DeviceConfig& config) {
         GM_ASSERT(config.physical_device, "Must have Vulkan physical device to create logical device");
 
         Device device{};
@@ -26,7 +25,7 @@ namespace Game {
         }
 
         float queue_priority = 1.0f;
-        std::set queue_families = {
+        std::set<u32> queue_families = {
             queue_family_indices.graphics_family.value(),
             queue_family_indices.present_family.value()
         };
@@ -53,6 +52,8 @@ namespace Game {
             GM_THROW("Could not create Vulkan device");
         }
 
+        set_vulkan_object_name(device, device, VK_OBJECT_TYPE_DEVICE, config.name.c_str());
+
         device.graphicsQueue = get_device_queue(device, queue_family_indices.graphics_family.value());
         if (!device.graphicsQueue) {
             GM_THROW("Could not get Vulkan device graphics queue");
@@ -66,7 +67,22 @@ namespace Game {
         return device;
     }
 
-    void destroy_device(const Device& device) {
+    void destroy_vulkan_device(const Device& device) {
         vkDestroyDevice(device, GM_VK_ALLOCATOR);
+    }
+
+    void set_vulkan_object_name(const Device& device, void* object, VkObjectType object_type, const char* object_name) {
+        VkDebugUtilsObjectNameInfoEXT name_info{};
+        name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        name_info.objectType = object_type;
+        name_info.objectHandle = (uint64_t) object;
+        name_info.pObjectName = object_name;
+
+        auto set_object_name_fn = (PFN_vkSetDebugUtilsObjectNameEXT) vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT");
+        if (!set_object_name_fn) {
+            GM_THROW("Could not get function to set Vulkan object name");
+        }
+
+        set_object_name_fn(device, &name_info);
     }
 }
