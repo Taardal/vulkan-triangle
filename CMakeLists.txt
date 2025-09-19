@@ -27,12 +27,16 @@ set(
     ${src_dir}/game_loop.h
     ${src_dir}/run.cpp
     ${src_dir}/run.h
-    ${src_dir}/graphics/device.cpp
-    ${src_dir}/graphics/device.h
-    ${src_dir}/graphics/physical_device.cpp
-    ${src_dir}/graphics/physical_device.h
     ${src_dir}/graphics/vulkan.cpp
     ${src_dir}/graphics/vulkan.h
+    ${src_dir}/graphics/vulkan_allocator.h
+    ${src_dir}/graphics/vulkan_assert.h
+    ${src_dir}/graphics/vulkan_device.cpp
+    ${src_dir}/graphics/vulkan_device.h
+    ${src_dir}/graphics/vulkan_instance.cpp
+    ${src_dir}/graphics/vulkan_instance.h
+    ${src_dir}/graphics/vulkan_physical_device.cpp
+    ${src_dir}/graphics/vulkan_physical_device.h
     ${src_dir}/system/assert.cpp
     ${src_dir}/system/assert.h
     ${src_dir}/system/environment.h

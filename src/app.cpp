@@ -22,7 +22,7 @@ namespace Game {
         return app;
     }
 
-    void destroy_app(App& app) {
+    void destroy_app(const App& app) {
         destroy_vulkan(app.vulkan);
         destroy_window(app.window);
     }

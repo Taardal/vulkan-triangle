@@ -16,6 +16,8 @@
 #include <GLFW/glfw3.h>
 
 // App
+#include "graphics/vulkan_allocator.h"
+#include "graphics/vulkan_assert.h"
 #include "system/assert.h"
 #include "system/error.h"
 #include "system/error_signal.h"

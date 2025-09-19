@@ -2,7 +2,11 @@
 
 #include "log.h"
 
-#define GM_THROW(message) throw Error(message, GM_TAG)
+#define GM_THROW(message) \
+    std::stringstream ss;\
+    ss << message;\
+    std::string message_string = ss.str();\
+    throw ::Game::Error(message_string, GM_TAG)
 
 #define GM_ASSERT_THROW(expression, message) \
     if (expression) {\

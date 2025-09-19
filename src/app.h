@@ -22,7 +22,7 @@ namespace Game {
 
     App create_app(const AppConfig& config);
 
-    void destroy_app(App& app);
+    void destroy_app(const App& app);
 
     void start(App& app);
 
