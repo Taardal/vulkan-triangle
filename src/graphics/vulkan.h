@@ -37,16 +37,16 @@ namespace Game {
 
         VkSwapchainKHR swap_chain = nullptr;
         VkExtent2D swap_chain_extent{};
+        VkSurfaceFormatKHR swap_chain_surface_format{};
         std::vector<VkImage> swap_chain_images;
         std::vector<VkImageView> swap_chain_image_views;
-        VkSurfaceFormatKHR swap_chain_surface_format{};
+        std::vector<VkFramebuffer> swap_chain_framebuffers;
+        VkRenderPass swap_chain_render_pass = nullptr;
 
         VkPipeline pipeline = nullptr;
         VkPipelineLayout pipeline_layout = nullptr;
         VkShaderModule vertex_shader = nullptr;
         VkShaderModule fragment_shader = nullptr;
-
-        VkRenderPass render_pass = nullptr;
     };
 
     void create_vulkan(Vulkan& vulkan, const VulkanConfig& config);

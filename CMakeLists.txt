@@ -40,12 +40,12 @@ set(
     ${src_dir}/graphics/vulkan_physical_device.h
     ${src_dir}/graphics/vulkan_pipeline.cpp
     ${src_dir}/graphics/vulkan_pipeline.h
-    ${src_dir}/graphics/vulkan_render_pass.cpp
-    ${src_dir}/graphics/vulkan_render_pass.h
     ${src_dir}/graphics/vulkan_surface.cpp
     ${src_dir}/graphics/vulkan_surface.h
     ${src_dir}/graphics/vulkan_swap_chain.cpp
     ${src_dir}/graphics/vulkan_swap_chain.h
+    ${src_dir}/graphics/vulkan_utils.cpp
+    ${src_dir}/graphics/vulkan_utils.h
     ${src_dir}/system/assert.cpp
     ${src_dir}/system/assert.h
     ${src_dir}/system/clock.cpp

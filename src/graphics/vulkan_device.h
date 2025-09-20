@@ -15,6 +15,4 @@ namespace Game {
     void create_vulkan_device(Vulkan& vulkan, const DeviceConfig& config = {});
 
     void destroy_vulkan_device(const Vulkan& vulkan);
-
-    void set_vulkan_object_name(VkDevice device, void* object, VkObjectType object_type, const char* object_name);
 }

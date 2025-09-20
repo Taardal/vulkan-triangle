@@ -128,12 +128,77 @@ namespace Game {
             image_view_create_info.subresourceRange.layerCount = 1;
 
             if (vkCreateImageView(vulkan.device, &image_view_create_info, GM_VK_ALLOCATOR, &vulkan.swap_chain_image_views[i]) != VK_SUCCESS) {
-                GM_THROW("Could not create Vulkan swap chain image view [" << i + 1 << " / " << image_count << "]");
+                GM_THROW("Could not create Vulkan swap chain image view [" << i + 1 << "] / [" << image_count << "]");
             }
+
+            std::string image_view_name = std::format("{} ImageView {}/{}", config.name, i + 1, image_count);
+            set_vulkan_object_name(vulkan.device, vulkan.swap_chain_image_views[i], VK_OBJECT_TYPE_IMAGE_VIEW, image_view_name.c_str());
+        }
+
+        VkAttachmentDescription color_attachment_description{};
+        color_attachment_description.format = vulkan.swap_chain_surface_format.format;
+        color_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
+        color_attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        color_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        color_attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        color_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        color_attachment_description.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference color_attachment_reference{};
+        color_attachment_reference.attachment = 0;
+        color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription subpass_description{};
+        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass_description.colorAttachmentCount = 1;
+        subpass_description.pColorAttachments = &color_attachment_reference;
+
+        VkRenderPassCreateInfo render_pass_create_info{};
+        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        render_pass_create_info.attachmentCount = 1;
+        render_pass_create_info.pAttachments = &color_attachment_description;
+        render_pass_create_info.subpassCount = 1;
+        render_pass_create_info.pSubpasses = &subpass_description;
+
+        if (vkCreateRenderPass(vulkan.device, &render_pass_create_info, GM_VK_ALLOCATOR, &vulkan.swap_chain_render_pass) != VK_SUCCESS) {
+            GM_THROW("Could not create Vulkan render pass");
+        }
+
+        std::string render_pass_name = std::format("{} RenderPass", config.name);
+        set_vulkan_object_name(vulkan.device, vulkan.swap_chain_render_pass, VK_OBJECT_TYPE_RENDER_PASS, render_pass_name.c_str());
+
+        vulkan.swap_chain_framebuffers.resize(image_count);
+        for (size_t i = 0; i < image_count; i++) {
+            VkImageView attachments[] = {
+                vulkan.swap_chain_image_views[i]
+            };
+
+            VkFramebufferCreateInfo framebuffer_create_info{};
+            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebuffer_create_info.renderPass = vulkan.swap_chain_render_pass;
+            framebuffer_create_info.attachmentCount = 1;
+            framebuffer_create_info.pAttachments = attachments;
+            framebuffer_create_info.width = image_extent.width;
+            framebuffer_create_info.height = image_extent.height;
+            framebuffer_create_info.layers = 1;
+
+            if (vkCreateFramebuffer(vulkan.device, &framebuffer_create_info, GM_VK_ALLOCATOR, &vulkan.swap_chain_framebuffers[i]) != VK_SUCCESS) {
+                GM_THROW("Could not create Vulkan framebuffer [" << i + 1 << " / " << image_count << "]");
+            }
+
+            std::string framebuffer_name = std::format("{} Framebuffer {}/{}", config.name, i + 1, image_count);
+            set_vulkan_object_name(vulkan.device, vulkan.swap_chain_framebuffers[i], VK_OBJECT_TYPE_FRAMEBUFFER, framebuffer_name.c_str());
         }
     }
 
     void destroy_vulkan_swap_chain(const Vulkan& vulkan) {
+        for (VkFramebuffer framebuffer : vulkan.swap_chain_framebuffers) {
+            vkDestroyFramebuffer(vulkan.device, framebuffer, nullptr);
+        }
+        if (vulkan.swap_chain_render_pass) {
+            vkDestroyRenderPass(vulkan.device, vulkan.swap_chain_render_pass, GM_VK_ALLOCATOR);
+        }
         for (VkImageView image_view : vulkan.swap_chain_image_views) {
             vkDestroyImageView(vulkan.device, image_view, GM_VK_ALLOCATOR);
         }

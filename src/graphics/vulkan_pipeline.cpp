@@ -18,7 +18,7 @@ namespace Game {
         return shaderModule;
     }
 
-    void create_vulkan_pipeline(Vulkan& vulkan, const GraphicsPipelineConfig& config) {
+    void create_vulkan_pipeline(Vulkan& vulkan, const PipelineConfig& config) {
 
         //
         // Programmable stages
@@ -152,6 +152,9 @@ namespace Game {
             GM_THROW("Could not create Vulkan pipeline layout");
         }
 
+        std::string pipeline_layout_name = std::format("{} Layout", config.name.c_str());
+        set_vulkan_object_name(vulkan.device, vulkan.pipeline_layout, VK_OBJECT_TYPE_PIPELINE_LAYOUT, pipeline_layout_name.c_str());
+
         VkGraphicsPipelineCreateInfo pipeline_create_info{};
         pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipeline_create_info.stageCount = 2;
@@ -165,7 +168,7 @@ namespace Game {
         pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
         pipeline_create_info.pDynamicState = &dynamic_state_create_info;
         pipeline_create_info.layout = vulkan.pipeline_layout;
-        pipeline_create_info.renderPass = vulkan.render_pass;
+        pipeline_create_info.renderPass = vulkan.swap_chain_render_pass;
         pipeline_create_info.subpass = 0;
         pipeline_create_info.basePipelineHandle = nullptr;
         pipeline_create_info.basePipelineIndex = -1;
@@ -175,6 +178,8 @@ namespace Game {
         if (vkCreateGraphicsPipelines(vulkan.device, pipeline_cache, create_info_count, &pipeline_create_info, GM_VK_ALLOCATOR, &vulkan.pipeline) != VK_SUCCESS) {
             GM_THROW("Could not create pipeline");
         }
+
+        set_vulkan_object_name(vulkan.device, vulkan.pipeline, VK_OBJECT_TYPE_PIPELINE, config.name.c_str());
     }
 
     void destroy_vulkan_pipeline(const Vulkan& vulkan) {
