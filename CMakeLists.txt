@@ -37,6 +37,8 @@ set(
     ${src_dir}/graphics/vulkan_instance.h
     ${src_dir}/graphics/vulkan_physical_device.cpp
     ${src_dir}/graphics/vulkan_physical_device.h
+    ${src_dir}/graphics/vulkan_surface.cpp
+    ${src_dir}/graphics/vulkan_surface.h
     ${src_dir}/graphics/vulkan_swap_chain.cpp
     ${src_dir}/graphics/vulkan_swap_chain.h
     ${src_dir}/system/assert.cpp

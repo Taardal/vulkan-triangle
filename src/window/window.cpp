@@ -32,10 +32,7 @@ namespace Game {
         on_glfw_event(event, glfw_window);
     }
 
-    Window create_window(const WindowConfig& config) {
-        Window window{};
-        window.config = config;
-
+    void create_window(Window& window, const WindowConfig& config) {
         if (!glfwInit()) {
             GM_THROW("Could not initialize GLFW");
         }
@@ -61,8 +58,6 @@ namespace Game {
 
         glfwSetKeyCallback(window.glfw_window, on_glfw_key_change_event);
         glfwSetWindowCloseCallback(window.glfw_window, on_glfw_window_close_event);
-
-        return window;
     }
 
     void destroy_window(const Window& window) {

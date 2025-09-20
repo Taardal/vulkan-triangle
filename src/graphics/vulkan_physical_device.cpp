@@ -1,6 +1,18 @@
 #include "vulkan_physical_device.h"
 
 namespace Game {
+    struct PhysicalDeviceInfo {
+        VkPhysicalDevice physical_device = nullptr;
+        VkPhysicalDeviceProperties properties{};
+        VkPhysicalDeviceFeatures features{};
+        std::vector<VkExtensionProperties> extensions{};
+        VkSurfaceCapabilitiesKHR surface_capabilities{};
+        std::vector<VkSurfaceFormatKHR> surface_formats;
+        std::vector<VkPresentModeKHR> present_modes;
+        QueueFamilyIndices queue_family_indices{};
+        VkFormat depth_format = VK_FORMAT_UNDEFINED;
+    };
+
     std::vector<const char*> get_required_extensions() {
         std::vector extensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -14,9 +26,13 @@ namespace Game {
     std::vector<VkExtensionProperties> get_available_extensions(VkPhysicalDevice physical_device) {
         const char* layer_name = nullptr;
         u32 extension_count = 0;
-        vkEnumerateDeviceExtensionProperties(physical_device, layer_name, &extension_count, nullptr);
+        if (vkEnumerateDeviceExtensionProperties(physical_device, layer_name, &extension_count, nullptr) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan physical device extension count");
+        }
         std::vector<VkExtensionProperties> extensions(extension_count);
-        vkEnumerateDeviceExtensionProperties(physical_device, layer_name, &extension_count, extensions.data());
+        if (vkEnumerateDeviceExtensionProperties(physical_device, layer_name, &extension_count, extensions.data()) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan physical device extensions");
+        }
         return extensions;
     }
 
@@ -61,8 +77,11 @@ namespace Game {
         return queue_family_indices.graphics_family.has_value() && queue_family_indices.present_family.has_value();
     }
 
-    bool has_required_swap_chain_support(const SwapChainInfo& swap_chain_info) {
-        return !swap_chain_info.surface_formats.empty() && !swap_chain_info.present_modes.empty();
+    bool has_required_swap_chain_support(
+        const std::vector<VkSurfaceFormatKHR>& surface_formats,
+        const std::vector<VkPresentModeKHR>& present_modes
+    ) {
+        return !surface_formats.empty() && !present_modes.empty();
     }
 
     bool has_required_features(const VkPhysicalDeviceFeatures& available_device_features) {
@@ -70,31 +89,31 @@ namespace Game {
     }
 
     u32 get_suitability_rating(
-        const PhysicalDevice& physical_device,
+        const PhysicalDeviceInfo& physical_device_info,
         const std::vector<const char*>& required_extensions
     ) {
-        if (!has_extensions(required_extensions, physical_device.extensions)) {
-            GM_LOG_DEBUG("[{}] does not have required device extensions", physical_device.properties.deviceName);
+        if (!has_extensions(required_extensions, physical_device_info.extensions)) {
+            GM_LOG_DEBUG("[{}] does not have required device extensions", physical_device_info.properties.deviceName);
             return 0;
         }
-        if (!has_required_features(physical_device.features)) {
-            GM_LOG_DEBUG("[{}] does not have required device features", physical_device.properties.deviceName);
+        if (!has_required_features(physical_device_info.features)) {
+            GM_LOG_DEBUG("[{}] does not have required device features", physical_device_info.properties.deviceName);
             return 0;
         }
-        if (!has_required_queue_family_indices(physical_device.queue_family_indices)) {
-            GM_LOG_DEBUG("[{}] does not have required queue family indices", physical_device.properties.deviceName);
+        if (!has_required_queue_family_indices(physical_device_info.queue_family_indices)) {
+            GM_LOG_DEBUG("[{}] does not have required queue family indices", physical_device_info.properties.deviceName);
             return 0;
         }
-        if (!has_required_swap_chain_support(physical_device.swap_chain_info)) {
-            GM_LOG_DEBUG("[{}] does not have required swap chain info", physical_device.properties.deviceName);
+        if (!has_required_swap_chain_support(physical_device_info.surface_formats, physical_device_info.present_modes)) {
+            GM_LOG_DEBUG("[{}] does not have required swap chain info", physical_device_info.properties.deviceName);
             return 0;
         }
-        if (physical_device.depth_format == VK_FORMAT_UNDEFINED) {
-            GM_LOG_DEBUG("[{}] does not have a suitable depth format", physical_device.properties.deviceName);
+        if (physical_device_info.depth_format == VK_FORMAT_UNDEFINED) {
+            GM_LOG_DEBUG("[{}] does not have a suitable depth format", physical_device_info.properties.deviceName);
             return 0;
         }
-        u32 rating = physical_device.properties.limits.maxImageDimension2D;
-        if (physical_device.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+        u32 rating = physical_device_info.properties.limits.maxImageDimension2D;
+        if (physical_device_info.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
             rating += 1000;
         }
         return rating;
@@ -117,22 +136,36 @@ namespace Game {
         return VK_FORMAT_UNDEFINED;
     }
 
-    SwapChainInfo get_swap_chain_info(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
-        SwapChainInfo swap_chain_info{};
+    VkSurfaceCapabilitiesKHR get_surface_capabilities(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
+        VkSurfaceCapabilitiesKHR surface_capabilities{};
+        if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surface_capabilities) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan physical device surface capabilities");
+        }
+        return surface_capabilities;
+    }
 
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &swap_chain_info.surface_capabilities);
-
+    std::vector<VkSurfaceFormatKHR> get_surface_formats(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
         u32 format_count = 0;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr);
-        swap_chain_info.surface_formats.resize(format_count);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, swap_chain_info.surface_formats.data());
+        if (vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan physical device surface format count");
+        }
+        std::vector<VkSurfaceFormatKHR> surface_formats(format_count);
+        if (vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, surface_formats.data()) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan physical device surface formats");
+        }
+        return surface_formats;
+    }
 
-        u32 presentation_mode_count = 0;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentation_mode_count, nullptr);
-        swap_chain_info.present_modes.resize(presentation_mode_count);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentation_mode_count, swap_chain_info.present_modes.data());
-
-        return swap_chain_info;
+    std::vector<VkPresentModeKHR> get_present_modes(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
+        u32 present_mode_count = 0;
+        if (vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, nullptr) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan physical device present mode count");
+        }
+        std::vector<VkPresentModeKHR> present_modes(present_mode_count);
+        if (vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes.data()) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan physical device present modes");
+        }
+        return present_modes;
     }
 
     QueueFamilyIndices get_queue_family_indices(VkPhysicalDevice physical_device, VkSurfaceKHR surface) {
@@ -160,38 +193,46 @@ namespace Game {
         return indices;
     }
 
-    PhysicalDevice get_physical_device(
-        const PhysicalDeviceConfig& config,
-        VkPhysicalDevice vk_physical_device,
-        const std::vector<const char*>& required_extensions
-    ) {
+    VkPhysicalDeviceProperties get_properties(VkPhysicalDevice physical_device) {
         VkPhysicalDeviceProperties properties;
-        vkGetPhysicalDeviceProperties(vk_physical_device, &properties);
-
-        VkPhysicalDeviceFeatures features;
-        vkGetPhysicalDeviceFeatures(vk_physical_device, &features);
-
-        PhysicalDevice physical_device{};
-        physical_device.physical_device = vk_physical_device;
-        physical_device.properties = properties;
-        physical_device.features = features;
-        physical_device.extensions = get_extensions(vk_physical_device, required_extensions);
-        physical_device.queue_family_indices = get_queue_family_indices(vk_physical_device, config.surface);
-        physical_device.swap_chain_info = get_swap_chain_info(vk_physical_device, config.surface);
-        physical_device.depth_format = get_depth_format(vk_physical_device);
-        return physical_device;
+        vkGetPhysicalDeviceProperties(physical_device, &properties);
+        return properties;
     }
 
-    PhysicalDevice get_most_suitable_physical_device(
-        const PhysicalDeviceConfig& config,
+    VkPhysicalDeviceFeatures get_features(VkPhysicalDevice physical_device) {
+        VkPhysicalDeviceFeatures features;
+        vkGetPhysicalDeviceFeatures(physical_device, &features);
+        return features;
+    }
+
+    PhysicalDeviceInfo get_physical_device_info(
+        const Vulkan& vulkan,
+        VkPhysicalDevice physical_device,
+        const std::vector<const char*>& required_extensions
+    ) {
+        PhysicalDeviceInfo physical_device_info{};
+        physical_device_info.physical_device = physical_device;
+        physical_device_info.properties = get_properties(physical_device);
+        physical_device_info.features = get_features(physical_device);
+        physical_device_info.extensions = get_extensions(physical_device, required_extensions);
+        physical_device_info.queue_family_indices = get_queue_family_indices(physical_device, vulkan.surface);
+        physical_device_info.surface_capabilities = get_surface_capabilities(physical_device, vulkan.surface);
+        physical_device_info.surface_formats = get_surface_formats(physical_device, vulkan.surface);
+        physical_device_info.present_modes = get_present_modes(physical_device, vulkan.surface);
+        physical_device_info.depth_format = get_depth_format(physical_device);
+        return physical_device_info;
+    }
+
+    PhysicalDeviceInfo get_most_suitable_physical_device(
+        const Vulkan& vulkan,
         const std::vector<VkPhysicalDevice>& available_devices,
         const std::vector<const char*>& required_extensions
     ) {
-        std::multimap<u32 , PhysicalDevice> devices_by_rating;
+        std::multimap<u32 , PhysicalDeviceInfo> devices_by_rating;
         for (VkPhysicalDevice available_device : available_devices) {
-            PhysicalDevice physical_device = get_physical_device(config, available_device, required_extensions);
-            u32 suitability_rating = get_suitability_rating(physical_device, required_extensions);
-            devices_by_rating.insert(std::make_pair(suitability_rating, physical_device));
+            PhysicalDeviceInfo physical_device_info = get_physical_device_info(vulkan, available_device, required_extensions);
+            u32 suitability_rating = get_suitability_rating(physical_device_info, required_extensions);
+            devices_by_rating.insert(std::make_pair(suitability_rating, physical_device_info));
         }
         u32 highest_rating = devices_by_rating.rbegin()->first;
         if (highest_rating == 0) {
@@ -200,31 +241,39 @@ namespace Game {
         return devices_by_rating.rbegin()->second;
     }
 
-    std::vector<VkPhysicalDevice> get_available_physical_devices(const PhysicalDeviceConfig& config) {
+    std::vector<VkPhysicalDevice> get_available_physical_devices(const Vulkan& vulkan) {
         u32 device_count = 0;
-        vkEnumeratePhysicalDevices(config.instance, &device_count, nullptr);
+        if (vkEnumeratePhysicalDevices(vulkan.instance, &device_count, nullptr) != VK_SUCCESS) {
+            GM_THROW("Could not get physical device count");
+        }
         std::vector<VkPhysicalDevice> devices(device_count);
-        vkEnumeratePhysicalDevices(config.instance, &device_count, devices.data());
+        if (vkEnumeratePhysicalDevices(vulkan.instance, &device_count, devices.data()) != VK_SUCCESS) {
+            GM_THROW("Could not get physical devices");
+        }
         return devices;
     }
 
-    PhysicalDevice pick_vulkan_physical_device(const PhysicalDeviceConfig& config) {
-        GM_ASSERT(config.instance, "Vulkan instance must be created before picking a physical device");
-        GM_ASSERT(config.surface, "Vulkan surface must be created before picking a physical device");
-
-        std::vector<VkPhysicalDevice> available_devices = get_available_physical_devices(config);
+    void pick_vulkan_physical_device(Vulkan& vulkan) {
+        std::vector<VkPhysicalDevice> available_devices = get_available_physical_devices(vulkan);
         if (available_devices.empty()) {
             GM_THROW("Could not find any available physical device");
         }
 
-        PhysicalDevice most_suitable_device = get_most_suitable_physical_device(config, available_devices, get_required_extensions());
-        if (!most_suitable_device.physical_device) {
+        PhysicalDeviceInfo most_suitable_device_info = get_most_suitable_physical_device(vulkan, available_devices, get_required_extensions());
+        if (!most_suitable_device_info.physical_device) {
             GM_THROW("Could not find any suitable physical device");
         }
 
-        GM_LOG_DEBUG("Picked physical device [{}]", most_suitable_device.properties.deviceName);
-        most_suitable_device.config = config;
+        GM_LOG_DEBUG("Picked physical device [{}]", most_suitable_device_info.properties.deviceName);
 
-        return most_suitable_device;
+        vulkan.physical_device = most_suitable_device_info.physical_device;
+        vulkan.physical_device_properties = most_suitable_device_info.properties;
+        vulkan.physical_device_features = most_suitable_device_info.features;
+        vulkan.physical_device_extensions = most_suitable_device_info.extensions;
+        vulkan.physical_device_surface_capabilities = most_suitable_device_info.surface_capabilities;
+        vulkan.physical_device_surface_formats = most_suitable_device_info.surface_formats;
+        vulkan.physical_device_present_modes = most_suitable_device_info.present_modes;
+        vulkan.physical_device_queue_family_indices = most_suitable_device_info.queue_family_indices;
+        vulkan.physical_device_depth_format = most_suitable_device_info.depth_format;
     }
 }

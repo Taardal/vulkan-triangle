@@ -20,7 +20,7 @@ namespace Game {
         Window window{};
     };
 
-    App create_app(const AppConfig& config);
+    void create_app(App& app, const AppConfig& config);
 
     void destroy_app(const App& app);
 

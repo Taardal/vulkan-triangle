@@ -29,7 +29,8 @@ namespace Game {
     void run(const AppConfig& config) {
         init(config);
         try {
-            App app = create_app(config);
+            App app{};
+            create_app(app, config);
             init(app);
             start(app);
             game_loop(app);

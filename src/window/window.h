@@ -12,7 +12,6 @@ namespace Game {
     };
 
     struct Window {
-        WindowConfig config{};
         GLFWwindow* glfw_window = nullptr;
         std::function<void(Event&)> on_event;
 
@@ -21,7 +20,7 @@ namespace Game {
         }
     };
 
-    Window create_window(const WindowConfig& config);
+    void create_window(Window& window, const WindowConfig& config);
 
     void destroy_window(const Window& window);
 

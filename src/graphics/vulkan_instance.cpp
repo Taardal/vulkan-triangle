@@ -1,28 +1,20 @@
 #include "vulkan_instance.h"
 
 namespace Game {
-    VkResult create_surface(VulkanInstance& vulkan) {
-        return glfwCreateWindowSurface(vulkan.instance, vulkan.config.window->glfw_window, GM_VK_ALLOCATOR, &vulkan.surface);
-    }
-
-    void destroy_surface(const VulkanInstance& instance) {
-        vkDestroySurfaceKHR(instance, instance.surface, GM_VK_ALLOCATOR);
-    }
-
-    VkResult create_debug_messenger(VulkanInstance& instance, const VkDebugUtilsMessengerCreateInfoEXT& debug_messenger_create_info) {
-        auto create_debug_messenger_fn = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    VkResult create_debug_messenger(Vulkan& vulkan, const VkDebugUtilsMessengerCreateInfoEXT& debug_messenger_create_info) {
+        auto create_debug_messenger_fn = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vulkan.instance, "vkCreateDebugUtilsMessengerEXT");
         if (!create_debug_messenger_fn) {
             GM_THROW("Could not get Vulkan debug messenger create function");
         }
-        return create_debug_messenger_fn(instance, &debug_messenger_create_info, GM_VK_ALLOCATOR, &instance.debug_messenger);
+        return create_debug_messenger_fn(vulkan.instance, &debug_messenger_create_info, GM_VK_ALLOCATOR, &vulkan.debug_messenger);
     }
 
-    void destroy_debug_messenger(const VulkanInstance& instance) {
-        auto destroy_debug_messenger_fn = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    void destroy_debug_messenger(const Vulkan& vulkan) {
+        auto destroy_debug_messenger_fn = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vulkan.instance, "vkDestroyDebugUtilsMessengerEXT");
         if (!destroy_debug_messenger_fn) {
             GM_THROW("Could not get Vulkan debug messenger destroy function");
         }
-        destroy_debug_messenger_fn(instance, instance.debug_messenger, GM_VK_ALLOCATOR);
+        destroy_debug_messenger_fn(vulkan.instance, vulkan.debug_messenger, GM_VK_ALLOCATOR);
     }
 
     std::string get_debug_message_type_name(VkDebugUtilsMessageTypeFlagsEXT message_type_flags) {
@@ -111,17 +103,13 @@ namespace Game {
         u32 extension_count = 0;
         const char* layer_name = nullptr;
         VkExtensionProperties* extension_properties = nullptr;
-        vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, extension_properties);
-        if (extension_count == 0) {
-            GM_THROW("Could not find any available Vulkan extensions");
+        if (vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, extension_properties) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan extension count");
         }
-
         std::vector<VkExtensionProperties> extensions(extension_count);
-        vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, extensions.data());
-        if (extensions.empty()) {
-            GM_THROW("Could not find any available Vulkan extensions");
+        if (vkEnumerateInstanceExtensionProperties(layer_name, &extension_count, extensions.data()) != VK_SUCCESS) {
+            GM_THROW("Could not get Vulkan extensions");
         }
-
         return extensions;
     }
 
@@ -146,13 +134,7 @@ namespace Game {
     std::vector<const char*> get_required_extensions(const VulkanInstanceConfig& config) {
         u32 glfw_extension_count = 0;
         const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
-        if (glfw_extension_count == 0) {
-            GM_THROW("Could not find any required Vulkan extensions");
-        }
         std::vector extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
-        if (extensions.empty()) {
-            GM_THROW("Could not get required Vulkan extensions");
-        }
 #ifdef GM_PLATFORM_MACOS
         extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 #endif
@@ -162,11 +144,9 @@ namespace Game {
         return extensions;
     }
 
-    VulkanInstance create_vulkan_instance(const VulkanInstanceConfig& config) {
-        VulkanInstance vulkan_instance{ .config = config };
-
+    void create_vulkan_instance(Vulkan& vulkan, const VulkanInstanceConfig& config) {
         std::vector<const char*> extensions = get_required_extensions(config);
-        if (!has_extensions(vulkan_instance.extensions)) {
+        if (!has_extensions(extensions)) {
             GM_THROW("System does not have required Vulkan extensions");
         }
 
@@ -205,32 +185,23 @@ namespace Game {
             instance_create_info.ppEnabledLayerNames = validation_layers.data();
         }
 
-        if (vkCreateInstance(&instance_create_info, GM_VK_ALLOCATOR, &vulkan_instance.instance) != VK_SUCCESS) {
+        if (vkCreateInstance(&instance_create_info, GM_VK_ALLOCATOR, &vulkan.instance) != VK_SUCCESS) {
             GM_THROW("Could not create Vulkan instance");
         }
 
         if (config.validation_layers_enabled) {
-            if (create_debug_messenger(vulkan_instance, debug_messenger_create_info) != VK_SUCCESS) {
+            if (create_debug_messenger(vulkan, debug_messenger_create_info) != VK_SUCCESS) {
                 GM_THROW("Could not create Vulkan debug messenger");
             }
         }
-
-        if (create_surface(vulkan_instance) != VK_SUCCESS) {
-            GM_THROW("Could not create Vulkan surface");
-        }
-
-        return vulkan_instance;
     }
 
-    void destroy_vulkan_instance(const VulkanInstance& vulkan_instance) {
-        if (vulkan_instance.surface) {
-            destroy_surface(vulkan_instance);
+    void destroy_vulkan_instance(const Vulkan& vulkan) {
+        if (vulkan.debug_messenger) {
+            destroy_debug_messenger(vulkan);
         }
-        if (vulkan_instance.debug_messenger) {
-            destroy_debug_messenger(vulkan_instance);
-        }
-        if (vulkan_instance.instance) {
-            vkDestroyInstance(vulkan_instance.instance, GM_VK_ALLOCATOR);
+        if (vulkan.instance) {
+            vkDestroyInstance(vulkan.instance, GM_VK_ALLOCATOR);
         }
     }
 
