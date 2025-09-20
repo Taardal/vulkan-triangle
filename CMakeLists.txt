@@ -12,11 +12,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE Debug)
 endif ()
-string(TOLOWER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_DIR_NAME)
+string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_dir_name)
 
 # Project directory paths
 set(bin_dir ${PROJECT_SOURCE_DIR}/bin)
 set(src_dir ${PROJECT_SOURCE_DIR}/src)
+set(cmake_dir ${PROJECT_SOURCE_DIR}/cmake)
 
 set(
     sources
@@ -37,21 +38,27 @@ set(
     ${src_dir}/graphics/vulkan_instance.h
     ${src_dir}/graphics/vulkan_physical_device.cpp
     ${src_dir}/graphics/vulkan_physical_device.h
+    ${src_dir}/graphics/vulkan_pipeline.cpp
+    ${src_dir}/graphics/vulkan_pipeline.h
+    ${src_dir}/graphics/vulkan_render_pass.cpp
+    ${src_dir}/graphics/vulkan_render_pass.h
     ${src_dir}/graphics/vulkan_surface.cpp
     ${src_dir}/graphics/vulkan_surface.h
     ${src_dir}/graphics/vulkan_swap_chain.cpp
     ${src_dir}/graphics/vulkan_swap_chain.h
     ${src_dir}/system/assert.cpp
     ${src_dir}/system/assert.h
+    ${src_dir}/system/clock.cpp
+    ${src_dir}/system/clock.h
     ${src_dir}/system/environment.h
     ${src_dir}/system/error.cpp
     ${src_dir}/system/error.h
     ${src_dir}/system/error_signal.cpp
     ${src_dir}/system/error_signal.h
-    ${src_dir}/system/clock.cpp
-    ${src_dir}/system/clock.h
     ${src_dir}/system/log.cpp
     ${src_dir}/system/log.h
+    ${src_dir}/system/file.cpp
+    ${src_dir}/system/file.h
     ${src_dir}/system/numbers.h
     ${src_dir}/system/time.cpp
     ${src_dir}/system/time.h
@@ -67,18 +74,33 @@ set(
     ${src_dir}/window/window_event.h
 )
 
-add_executable(${PROJECT_NAME} ${sources})
-target_include_directories(${PROJECT_NAME} PUBLIC ${src_dir})
-target_precompile_headers(${PROJECT_NAME} PUBLIC ${src_dir}/pch.h)
+set(exe_target "${PROJECT_NAME}")
+add_executable(${exe_target} ${sources})
+target_include_directories(${exe_target} PUBLIC ${src_dir})
+target_precompile_headers(${exe_target} PUBLIC ${src_dir}/pch.h)
 
 set_target_properties(
-        ${PROJECT_NAME}
+        ${exe_target}
         PROPERTIES
-        RUNTIME_OUTPUT_NAME ${PROJECT_NAME}
+        RUNTIME_OUTPUT_NAME ${exe_target}
         RUNTIME_OUTPUT_DIRECTORY ${bin_dir}
         RUNTIME_OUTPUT_DIRECTORY_DEBUG ${bin_dir}/debug
         RUNTIME_OUTPUT_DIRECTORY_RELEASE ${bin_dir}/release
 )
+
+# --------------------------------------------------------------------------------------------------------------
+# Custom targets
+# --------------------------------------------------------------------------------------------------------------
+
+set(compile_shaders_target CompileShaders)
+set(shaders_source_dir ${PROJECT_SOURCE_DIR}/res/shaders)
+set(shaders_output_dir ${PROJECT_SOURCE_DIR}/bin/${build_type_dir_name}/res/shaders)
+add_custom_target(
+    ${compile_shaders_target}
+    COMMAND ${CMAKE_COMMAND} -D SHADERS_SOURCE_DIR=${shaders_source_dir} -D SHADERS_OUTPUT_DIR=${shaders_output_dir} -P ${cmake_dir}/compile_shaders.cmake
+    COMMENT "Compiling shaders"
+)
+add_dependencies(${exe_target} ${compile_shaders_target})
 
 # --------------------------------------------------------------------------------------------------------------
 # Dependencies
@@ -96,7 +118,7 @@ FetchContent_Declare(
         GIT_TAG 3.4
 )
 FetchContent_MakeAvailable(glfw)
-target_link_libraries(${PROJECT_NAME} glfw)
+target_link_libraries(${exe_target} glfw)
 
 # SPDLOG
 FetchContent_Declare(
@@ -105,8 +127,8 @@ FetchContent_Declare(
         GIT_TAG v1.9.2
 )
 FetchContent_MakeAvailable(spdlog)
-target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
+target_link_libraries(${exe_target} spdlog::spdlog)
 
 find_package(Vulkan REQUIRED)
-target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${Vulkan_LIBRARIES})
+target_include_directories(${exe_target} PRIVATE ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(${exe_target} ${Vulkan_LIBRARIES})

@@ -17,11 +17,10 @@ namespace Game {
     };
 
     struct Vulkan {
-        VkDebugUtilsMessengerEXT debug_messenger = nullptr;
-        VkDevice device = nullptr;
         VkInstance instance = nullptr;
-        VkQueue graphicsQueue = nullptr;
-        VkQueue presentQueue = nullptr;
+        VkDebugUtilsMessengerEXT debug_messenger = nullptr;
+        VkSurfaceKHR surface = nullptr;
+
         VkPhysicalDevice physical_device = nullptr;
         VkPhysicalDeviceProperties physical_device_properties{};
         VkPhysicalDeviceFeatures physical_device_features{};
@@ -31,12 +30,23 @@ namespace Game {
         std::vector<VkPresentModeKHR> physical_device_present_modes;
         QueueFamilyIndices physical_device_queue_family_indices{};
         VkFormat physical_device_depth_format = VK_FORMAT_UNDEFINED;
-        VkSurfaceKHR surface = nullptr;
+
+        VkDevice device = nullptr;
+        VkQueue graphicsQueue = nullptr;
+        VkQueue presentQueue = nullptr;
+
         VkSwapchainKHR swap_chain = nullptr;
         VkExtent2D swap_chain_extent{};
         std::vector<VkImage> swap_chain_images;
         std::vector<VkImageView> swap_chain_image_views;
         VkSurfaceFormatKHR swap_chain_surface_format{};
+
+        VkPipeline pipeline = nullptr;
+        VkPipelineLayout pipeline_layout = nullptr;
+        VkShaderModule vertex_shader = nullptr;
+        VkShaderModule fragment_shader = nullptr;
+
+        VkRenderPass render_pass = nullptr;
     };
 
     void create_vulkan(Vulkan& vulkan, const VulkanConfig& config);

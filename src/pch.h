@@ -3,6 +3,7 @@
 // Standard library
 #include <algorithm>
 #include <exception>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <map>

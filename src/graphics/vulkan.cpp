@@ -3,6 +3,8 @@
 #include "vulkan_device.h"
 #include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
+#include "vulkan_pipeline.h"
+#include "vulkan_render_pass.h"
 #include "vulkan_surface.h"
 #include "vulkan_swap_chain.h"
 
@@ -29,9 +31,18 @@ namespace Game {
         create_vulkan_swap_chain(vulkan, {
             .window = config.window,
         });
+
+        create_vulkan_render_pass(vulkan);
+
+        create_vulkan_pipeline(vulkan, {
+            .vertex_shader_path = "res/shaders/triangle.vert.spv",
+            .fragment_shader_path = "res/shaders/triangle.frag.spv",
+        });
     }
 
     void destroy_vulkan(const Vulkan& vulkan) {
+        destroy_vulkan_pipeline(vulkan);
+        destroy_vulkan_render_pass(vulkan);
         destroy_vulkan_swap_chain(vulkan);
         destroy_vulkan_device(vulkan);
         destroy_vulkan_surface(vulkan);
