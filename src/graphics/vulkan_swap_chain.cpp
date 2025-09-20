@@ -2,7 +2,6 @@
 #include "vulkan_device.h"
 
 namespace Game {
-
     std::vector<VkImage> get_images(VkDevice device, VkSwapchainKHR swap_chain) {
         u32 image_count = 0;
         if (vkGetSwapchainImagesKHR(device, swap_chain, &image_count, nullptr) != VK_SUCCESS) {
@@ -110,9 +109,34 @@ namespace Game {
         if (image_count < min_image_count) {
             GM_THROW("Could not get minimum required swap chain images. Got [" << image_count << "], required [" << min_image_count << "]");
         }
+
+        vulkan.swap_chain_image_views.resize(image_count);
+        for (u32 i = 0; i < image_count; ++i) {
+            VkImageViewCreateInfo image_view_create_info{};
+            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            image_view_create_info.image = vulkan.swap_chain_images[i];
+            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.format = surface_format.format;
+            image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            image_view_create_info.subresourceRange.baseMipLevel = 0;
+            image_view_create_info.subresourceRange.levelCount = 1;
+            image_view_create_info.subresourceRange.baseArrayLayer = 0;
+            image_view_create_info.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(vulkan.device, &image_view_create_info, GM_VK_ALLOCATOR, &vulkan.swap_chain_image_views[i]) != VK_SUCCESS) {
+                GM_THROW("Could not create Vulkan swap chain image view [" << i + 1 << " / " << image_count << "]");
+            }
+        }
     }
 
     void destroy_vulkan_swap_chain(const Vulkan& vulkan) {
+        for (VkImageView image_view : vulkan.swap_chain_image_views) {
+            vkDestroyImageView(vulkan.device, image_view, GM_VK_ALLOCATOR);
+        }
         if (vulkan.swap_chain) {
             vkDestroySwapchainKHR(vulkan.device, vulkan.swap_chain, GM_VK_ALLOCATOR);
         }

@@ -35,6 +35,7 @@ namespace Game {
         VkSwapchainKHR swap_chain = nullptr;
         VkExtent2D swap_chain_extent{};
         std::vector<VkImage> swap_chain_images;
+        std::vector<VkImageView> swap_chain_image_views;
         VkSurfaceFormatKHR swap_chain_surface_format{};
     };
 
