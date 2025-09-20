@@ -3,6 +3,7 @@
 #include "graphics/vulkan_device.h"
 #include "graphics/vulkan_instance.h"
 #include "graphics/vulkan_physical_device.h"
+#include "graphics/vulkan_swap_chain.h"
 #include "window/window.h"
 
 namespace Game {
@@ -19,6 +20,7 @@ namespace Game {
         VulkanInstance instance{};
         PhysicalDevice physical_device{};
         Device device{};
+        SwapChain swap_chain{};
     };
 
     Vulkan create_vulkan(const VulkanConfig& config);

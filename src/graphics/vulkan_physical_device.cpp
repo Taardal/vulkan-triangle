@@ -176,8 +176,8 @@ namespace Game {
         physical_device.properties = properties;
         physical_device.features = features;
         physical_device.extensions = get_extensions(vk_physical_device, required_extensions);
-        physical_device.queue_family_indices = get_queue_family_indices(vk_physical_device, config.vulkan_instance->surface);
-        physical_device.swap_chain_info = get_swap_chain_info(vk_physical_device, config.vulkan_instance->surface);
+        physical_device.queue_family_indices = get_queue_family_indices(vk_physical_device, config.surface);
+        physical_device.swap_chain_info = get_swap_chain_info(vk_physical_device, config.surface);
         physical_device.depth_format = get_depth_format(vk_physical_device);
         return physical_device;
     }
@@ -202,15 +202,15 @@ namespace Game {
 
     std::vector<VkPhysicalDevice> get_available_physical_devices(const PhysicalDeviceConfig& config) {
         u32 device_count = 0;
-        vkEnumeratePhysicalDevices(config.vulkan_instance->instance, &device_count, nullptr);
+        vkEnumeratePhysicalDevices(config.instance, &device_count, nullptr);
         std::vector<VkPhysicalDevice> devices(device_count);
-        vkEnumeratePhysicalDevices(config.vulkan_instance->instance, &device_count, devices.data());
+        vkEnumeratePhysicalDevices(config.instance, &device_count, devices.data());
         return devices;
     }
 
     PhysicalDevice pick_vulkan_physical_device(const PhysicalDeviceConfig& config) {
-        GM_ASSERT(config.vulkan_instance->instance, "Vulkan instance must be created before picking a physical device");
-        GM_ASSERT(config.vulkan_instance->surface, "Vulkan surface must be created before picking a physical device");
+        GM_ASSERT(config.instance, "Vulkan instance must be created before picking a physical device");
+        GM_ASSERT(config.surface, "Vulkan surface must be created before picking a physical device");
 
         std::vector<VkPhysicalDevice> available_devices = get_available_physical_devices(config);
         if (available_devices.empty()) {

@@ -37,6 +37,8 @@ set(
     ${src_dir}/graphics/vulkan_instance.h
     ${src_dir}/graphics/vulkan_physical_device.cpp
     ${src_dir}/graphics/vulkan_physical_device.h
+    ${src_dir}/graphics/vulkan_swap_chain.cpp
+    ${src_dir}/graphics/vulkan_swap_chain.h
     ${src_dir}/system/assert.cpp
     ${src_dir}/system/assert.h
     ${src_dir}/system/environment.h
@@ -49,7 +51,6 @@ set(
     ${src_dir}/system/log.cpp
     ${src_dir}/system/log.h
     ${src_dir}/system/numbers.h
-    ${src_dir}/system/ref.h
     ${src_dir}/system/time.cpp
     ${src_dir}/system/time.h
     ${src_dir}/window/event.cpp

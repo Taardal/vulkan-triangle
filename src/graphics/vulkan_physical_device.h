@@ -1,7 +1,5 @@
 #pragma once
 
-#include "graphics/vulkan_instance.h"
-
 namespace Game {
     struct QueueFamilyIndices {
         std::optional<u32> graphics_family;
@@ -15,7 +13,8 @@ namespace Game {
     };
 
     struct PhysicalDeviceConfig {
-        VulkanInstance* vulkan_instance = nullptr;
+        VkInstance instance = nullptr;
+        VkSurfaceKHR surface = nullptr;
     };
 
     struct PhysicalDevice {

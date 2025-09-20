@@ -14,9 +14,9 @@ namespace Game {
         Device device{};
         device.config = config;
 
-        const QueueFamilyIndices& queue_family_indices = config.physical_device->queue_family_indices;
-        const VkPhysicalDeviceFeatures& enabled_features = config.physical_device->features;
-        const std::vector<VkExtensionProperties>& enabled_extensions = config.physical_device->extensions;
+        const QueueFamilyIndices& queue_family_indices = config.queue_family_indices;
+        const VkPhysicalDeviceFeatures& enabled_features = config.physical_device_features;
+        const std::vector<VkExtensionProperties>& enabled_extensions = config.physical_device_extensions;
 
         std::vector<const char*> enabled_extension_names;
         enabled_extension_names.reserve(enabled_extensions.size());
@@ -48,7 +48,7 @@ namespace Game {
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.queueCreateInfoCount = (u32) queue_create_infos.size();
 
-        if (vkCreateDevice(config.physical_device->physical_device, &device_create_info, GM_VK_ALLOCATOR, &device.device) != VK_SUCCESS) {
+        if (vkCreateDevice(config.physical_device, &device_create_info, GM_VK_ALLOCATOR, &device.device) != VK_SUCCESS) {
             GM_THROW("Could not create Vulkan device");
         }
 
@@ -71,7 +71,7 @@ namespace Game {
         vkDestroyDevice(device, GM_VK_ALLOCATOR);
     }
 
-    void set_vulkan_object_name(const Device& device, void* object, VkObjectType object_type, const char* object_name) {
+    void set_vulkan_object_name(VkDevice device, void* object, VkObjectType object_type, const char* object_name) {
         VkDebugUtilsObjectNameInfoEXT name_info{};
         name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         name_info.objectType = object_type;

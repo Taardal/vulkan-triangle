@@ -10,7 +10,10 @@ namespace Game {
 
     struct DeviceConfig {
         std::string name = "Device";
-        PhysicalDevice* physical_device = nullptr;
+        VkPhysicalDevice physical_device = nullptr;
+        VkPhysicalDeviceFeatures physical_device_features{};
+        std::vector<VkExtensionProperties> physical_device_extensions{};
+        QueueFamilyIndices queue_family_indices{};
     };
 
     struct Device {
@@ -36,5 +39,5 @@ namespace Game {
 
     void destroy_vulkan_device(const Device& device);
 
-    void set_vulkan_object_name(const Device& device, void* object, VkObjectType object_type, const char* object_name);
+    void set_vulkan_object_name(VkDevice device, void* object, VkObjectType object_type, const char* object_name);
 }

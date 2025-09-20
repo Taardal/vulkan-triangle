@@ -74,4 +74,11 @@ namespace Game {
         window.on_event = on_event;
         glfwSetWindowUserPointer(window, &window);
     }
+
+    WindowSize get_window_size(const Window& window) {
+        i32 width = 0;
+        i32 height = 0;
+        glfwGetFramebufferSize(window, &width, &height);
+        return { width, height };
+    }
 }

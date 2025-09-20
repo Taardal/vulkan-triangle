@@ -26,4 +26,11 @@ namespace Game {
     void destroy_window(const Window& window);
 
     void set_window_event_listener(Window& window, const std::function<void(Event&)>& on_event);
+
+    struct WindowSize {
+        i32 width = 0;
+        i32 height = 0;
+    };
+
+    WindowSize get_window_size(const Window& window);
 }
