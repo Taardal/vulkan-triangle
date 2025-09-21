@@ -14,6 +14,7 @@ namespace Game {
             .application_name = config.title,
             .engine_name = std::format("{} Engine", config.title),
             .validation_layers_enabled = true,
+            .debug_extension_enabled = true,
         });
     }
 

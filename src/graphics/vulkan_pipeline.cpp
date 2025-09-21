@@ -3,19 +3,19 @@
 
 namespace Game {
     VkShaderModule create_shader_module(VkDevice device, const std::filesystem::path& shader_path) {
-        std::vector<char> bytes = read_bytes(shader_path);
+        std::vector<char> shader_bytes = read_bytes(shader_path);
 
-        VkShaderModuleCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = bytes.size();
-        createInfo.pCode = reinterpret_cast<const u32*>(bytes.data());
+        VkShaderModuleCreateInfo shader_module_create_info{};
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.codeSize = shader_bytes.size();
+        shader_module_create_info.pCode = reinterpret_cast<const u32*>(shader_bytes.data());
 
-        VkShaderModule shaderModule;
-        if (vkCreateShaderModule(device, &createInfo, GM_VK_ALLOCATOR, &shaderModule) != VK_SUCCESS) {
+        VkShaderModule shader_module;
+        if (vkCreateShaderModule(device, &shader_module_create_info, GM_VK_ALLOCATOR, &shader_module) != VK_SUCCESS) {
             GM_THROW("Could not create Vulkan shader module");
         }
 
-        return shaderModule;
+        return shader_module;
     }
 
     void create_vulkan_pipeline(Vulkan& vulkan, const PipelineConfig& config) {
@@ -26,6 +26,12 @@ namespace Game {
 
         vulkan.vertex_shader = create_shader_module(vulkan.device, config.vertex_shader_path);
         vulkan.fragment_shader = create_shader_module(vulkan.device, config.fragment_shader_path);
+
+        std::string vertex_shader_name = std::format("{} VertexShader", config.name.c_str());
+        set_vulkan_object_name(vulkan.device, vulkan.vertex_shader, VK_OBJECT_TYPE_SHADER_MODULE, vertex_shader_name.c_str());
+
+        std::string fragment_shader_name = std::format("{} FragmentShader", config.name.c_str());
+        set_vulkan_object_name(vulkan.device, vulkan.fragment_shader, VK_OBJECT_TYPE_SHADER_MODULE, fragment_shader_name.c_str());
 
         VkPipelineShaderStageCreateInfo vertex_shader_stage_create_info{};
         vertex_shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -96,7 +102,7 @@ namespace Game {
         rasterization_state_create_info.polygonMode = VK_POLYGON_MODE_FILL;
         rasterization_state_create_info.lineWidth = 1.0f;
         rasterization_state_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterization_state_create_info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rasterization_state_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
         rasterization_state_create_info.depthBiasEnable = VK_FALSE;
 
         VkPipelineMultisampleStateCreateInfo multisample_state_create_info{};
@@ -173,8 +179,8 @@ namespace Game {
         pipeline_create_info.basePipelineHandle = nullptr;
         pipeline_create_info.basePipelineIndex = -1;
 
-        constexpr i32 create_info_count = 1;
-        constexpr VkPipelineCache pipeline_cache = nullptr;
+        i32 create_info_count = 1;
+        VkPipelineCache pipeline_cache = nullptr;
         if (vkCreateGraphicsPipelines(vulkan.device, pipeline_cache, create_info_count, &pipeline_create_info, GM_VK_ALLOCATOR, &vulkan.pipeline) != VK_SUCCESS) {
             GM_THROW("Could not create pipeline");
         }
@@ -183,17 +189,9 @@ namespace Game {
     }
 
     void destroy_vulkan_pipeline(const Vulkan& vulkan) {
-        if (vulkan.pipeline) {
-            vkDestroyPipeline(vulkan.device, vulkan.pipeline, GM_VK_ALLOCATOR);
-        }
-        if (vulkan.pipeline_layout) {
-            vkDestroyPipelineLayout(vulkan.device, vulkan.pipeline_layout, GM_VK_ALLOCATOR);
-        }
-        if (vulkan.fragment_shader) {
-            vkDestroyShaderModule(vulkan.device, vulkan.fragment_shader, GM_VK_ALLOCATOR);
-        }
-        if (vulkan.vertex_shader) {
-            vkDestroyShaderModule(vulkan.device, vulkan.vertex_shader, GM_VK_ALLOCATOR);
-        }
+        vkDestroyPipeline(vulkan.device, vulkan.pipeline, GM_VK_ALLOCATOR);
+        vkDestroyPipelineLayout(vulkan.device, vulkan.pipeline_layout, GM_VK_ALLOCATOR);
+        vkDestroyShaderModule(vulkan.device, vulkan.fragment_shader, GM_VK_ALLOCATOR);
+        vkDestroyShaderModule(vulkan.device, vulkan.vertex_shader, GM_VK_ALLOCATOR);
     }
 }

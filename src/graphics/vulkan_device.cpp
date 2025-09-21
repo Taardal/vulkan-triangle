@@ -49,13 +49,13 @@ namespace Game {
 
         set_vulkan_object_name(vulkan.device, vulkan.device, VK_OBJECT_TYPE_DEVICE, config.name.c_str());
 
-        vulkan.graphicsQueue = get_device_queue(vulkan.device, queue_family_indices.graphics_family.value());
-        if (!vulkan.graphicsQueue) {
+        vulkan.graphics_queue = get_device_queue(vulkan.device, queue_family_indices.graphics_family.value());
+        if (!vulkan.graphics_queue) {
             GM_THROW("Could not get Vulkan device graphics queue");
         }
 
-        vulkan.presentQueue = get_device_queue(vulkan.device, queue_family_indices.present_family.value());
-        if (!vulkan.presentQueue) {
+        vulkan.present_queue = get_device_queue(vulkan.device, queue_family_indices.present_family.value());
+        if (!vulkan.present_queue) {
             GM_THROW("Could not get Vulkan device present queue");
         }
     }

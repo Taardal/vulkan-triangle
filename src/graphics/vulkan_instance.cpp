@@ -138,7 +138,7 @@ namespace Game {
 #ifdef GM_PLATFORM_MACOS
         extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 #endif
-        if (config.validation_layers_enabled) {
+        if (config.debug_extension_enabled) {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
         return extensions;
@@ -159,7 +159,7 @@ namespace Game {
         }
 
         VkDebugUtilsMessengerCreateInfoEXT debug_messenger_create_info{};
-        if (config.validation_layers_enabled) {
+        if (config.debug_extension_enabled) {
             debug_messenger_create_info = get_debug_messenger_create_info();
         }
 
@@ -179,8 +179,10 @@ namespace Game {
 #ifdef GM_PLATFORM_MACOS
         instance_create_info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif
-        if (config.validation_layers_enabled) {
+        if (config.debug_extension_enabled) {
             instance_create_info.pNext = &debug_messenger_create_info;
+        }
+        if (config.validation_layers_enabled) {
             instance_create_info.enabledLayerCount = validation_layers.size();
             instance_create_info.ppEnabledLayerNames = validation_layers.data();
         }
@@ -189,7 +191,7 @@ namespace Game {
             GM_THROW("Could not create Vulkan instance");
         }
 
-        if (config.validation_layers_enabled) {
+        if (config.debug_extension_enabled) {
             if (create_debug_messenger(vulkan, debug_messenger_create_info) != VK_SUCCESS) {
                 GM_THROW("Could not create Vulkan debug messenger");
             }
@@ -200,9 +202,7 @@ namespace Game {
         if (vulkan.debug_messenger) {
             destroy_debug_messenger(vulkan);
         }
-        if (vulkan.instance) {
-            vkDestroyInstance(vulkan.instance, GM_VK_ALLOCATOR);
-        }
+        vkDestroyInstance(vulkan.instance, GM_VK_ALLOCATOR);
     }
 
 }

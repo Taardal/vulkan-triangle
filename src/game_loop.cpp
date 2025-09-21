@@ -2,13 +2,7 @@
 #include "system/time.h"
 
 namespace Game {
-    void update(f64 timestep) {
-    }
-
-    void render() {
-    }
-
-    void game_loop(App& app) {
+    void game_loop(App& app, const GameLoopConfig& config) {
 
         // Update game at fixed timesteps to have game systems update at a predictable rate
         constexpr f64 timestep_sec = 1.0 / 60.0;
@@ -51,7 +45,7 @@ namespace Game {
             // Whenever the game time lags behind the app time by one-or-more timesteps, tick the game
             // time forwards until it's caught up.
             while (game_lag_ms >= timestep_ms) {
-                update(timestep_sec);
+                config.on_update(app, timestep_sec);
                 game_lag_ms -= timestep_ms;
             }
 
@@ -59,7 +53,7 @@ namespace Game {
             // RENDER
             //
 
-            render();
+            config.on_render(app);
         }
     }
 }

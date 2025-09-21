@@ -3,6 +3,13 @@
 #include "window/key_event.h"
 
 namespace Game {
+    void update(App& app, f64 timestep) {
+    }
+
+    void render(App& app) {
+        render_frame(app.vulkan);
+    }
+
     void on_event(App& app, Event& e) {
         if (e.type == EventType::WindowClose) {
             stop(app);
@@ -33,7 +40,10 @@ namespace Game {
             create_app(app, config);
             init(app);
             start(app);
-            game_loop(app);
+            game_loop(app, {
+                .on_update = update,
+                .on_render = render,
+            });
             destroy_app(app);
         } catch (const Game::Error& e) {
             GM_LOG_CRITICAL("Fatal error");
