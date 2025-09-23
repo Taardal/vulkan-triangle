@@ -10,6 +10,8 @@
 
 namespace Game {
     void create_vulkan(Vulkan& vulkan, const VulkanConfig& config) {
+        vulkan.config = config;
+
         if (glfwVulkanSupported() != GLFW_TRUE) {
             GM_THROW("Vulkan is not supported");
         }

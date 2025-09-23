@@ -13,13 +13,16 @@ namespace Game {
     void on_event(App& app, Event& e) {
         if (e.type == EventType::WindowClose) {
             stop(app);
+            return;
         }
         if (e.type == EventType::KeyPressed) {
             auto& event = (KeyPressedEvent&) e;
             if (event.key == Key::Escape) {
                 stop(app);
+                return;
             }
         }
+        handle_renderer_event(app.renderer, e);
     }
 
     void init(App& app) {

@@ -32,4 +32,8 @@ namespace Game {
     };
 
     WindowSize get_window_size(const Window& window);
+
+    void get_window_size(const Window& window, i32* width, i32* height);
+
+    bool is_window_iconified(const Window& window);
 }

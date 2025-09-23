@@ -18,6 +18,8 @@ namespace Game {
     };
 
     struct Vulkan {
+        VulkanConfig config{};
+
         VkInstance instance = nullptr;
         VkDebugUtilsMessengerEXT debug_messenger = nullptr;
 
@@ -44,6 +46,7 @@ namespace Game {
         std::vector<VkImageView> swap_chain_image_views;
         std::vector<VkFramebuffer> swap_chain_framebuffers;
         VkRenderPass swap_chain_render_pass = nullptr;
+        std::string swap_chain_name;
 
         VkPipeline pipeline = nullptr;
         VkPipelineLayout pipeline_layout = nullptr;

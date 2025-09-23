@@ -13,4 +13,6 @@ namespace Game {
     void create_vulkan_swap_chain(Vulkan& vulkan, const SwapChainConfig& config);
 
     void destroy_vulkan_swap_chain(const Vulkan& vulkan);
+
+    void recreate_vulkan_swap_chain(Vulkan& vulkan, const SwapChainConfig& config);
 }

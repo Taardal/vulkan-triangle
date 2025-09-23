@@ -14,7 +14,12 @@ namespace Game {
         window->on_event(event);
     }
 
-    void on_glfw_key_change_event(GLFWwindow* glfw_window, i32 key, i32 scan_code, i32 action, i32 mods) {
+    void window_close_callback(GLFWwindow* glfw_window) {
+        WindowCloseEvent event{};
+        on_glfw_event(event, glfw_window);
+    }
+
+    void key_callback(GLFWwindow* glfw_window, i32 key, i32 scan_code, i32 action, i32 mods) {
         if (action == GLFW_PRESS) {
             KeyPressedEvent event(key, mods, scan_code);
             on_glfw_event(event, glfw_window);
@@ -27,8 +32,8 @@ namespace Game {
         }
     }
 
-    void on_glfw_window_close_event(GLFWwindow* glfw_window) {
-        WindowCloseEvent event{};
+    void framebuffer_size_callback(GLFWwindow* glfw_window, i32 width, i32 height) {
+        WindowResizeEvent event(width, height);
         on_glfw_event(event, glfw_window);
     }
 
@@ -56,8 +61,9 @@ namespace Game {
             GM_THROW("Could not create GLFW window");
         }
 
-        glfwSetKeyCallback(window.glfw_window, on_glfw_key_change_event);
-        glfwSetWindowCloseCallback(window.glfw_window, on_glfw_window_close_event);
+        glfwSetFramebufferSizeCallback(window.glfw_window, framebuffer_size_callback);
+        glfwSetKeyCallback(window.glfw_window, key_callback);
+        glfwSetWindowCloseCallback(window.glfw_window, window_close_callback);
     }
 
     void destroy_window(const Window& window) {
@@ -73,7 +79,29 @@ namespace Game {
     WindowSize get_window_size(const Window& window) {
         i32 width = 0;
         i32 height = 0;
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(window.glfw_window, &width, &height);
         return { width, height };
+    }
+
+    void get_window_size(const Window& window, i32* width, i32* height) {
+        glfwGetFramebufferSize(window.glfw_window, width, height);
+    }
+
+    void wait_until_not_minimized(const Window& window) {
+        bool iconified = is_window_iconified(window);
+
+        i32 width = 0;
+        i32 height = 0;
+        get_window_size(window, &width, &height);
+
+        while (iconified || width == 0 || height == 0) {
+            iconified = is_window_iconified(window);
+            get_window_size(window, &width, &height);
+            glfwWaitEvents();
+        }
+    }
+
+    bool is_window_iconified(const Window& window) {
+        return glfwGetWindowAttrib(window.glfw_window, GLFW_ICONIFIED) == 1;
     }
 }

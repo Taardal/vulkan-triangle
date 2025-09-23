@@ -296,4 +296,14 @@ namespace Game {
         destroy_image_views(vulkan);
         destroy_swap_chain(vulkan);
     }
+
+    void recreate_vulkan_swap_chain(Vulkan& vulkan, const SwapChainConfig& config) {
+        destroy_framebuffers(vulkan);
+        destroy_image_views(vulkan);
+        destroy_swap_chain(vulkan);
+
+        create_swap_chain(vulkan, config);
+        create_image_views(vulkan, config);
+        create_framebuffers(vulkan, config);
+    }
 }

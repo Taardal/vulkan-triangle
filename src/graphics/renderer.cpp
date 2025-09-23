@@ -1,6 +1,32 @@
 #include "renderer.h"
 
+#include "vulkan_swap_chain.h"
+
 namespace Game {
+    void wait_until_window_is_not_minimized(const Window& window) {
+        bool iconified = is_window_iconified(window);
+
+        i32 width = 0;
+        i32 height = 0;
+        get_window_size(window, &width, &height);
+
+        while (iconified || width == 0 || height == 0) {
+            iconified = is_window_iconified(window);
+            get_window_size(window, &width, &height);
+            glfwWaitEvents();
+        }
+    }
+
+    void recreate_swap_chain(Vulkan& vulkan) {
+        wait_until_window_is_not_minimized(*vulkan.config.window);
+        vkDeviceWaitIdle(vulkan.device);
+        recreate_vulkan_swap_chain(vulkan, {
+            .window = vulkan.config.window,
+            .name = vulkan.swap_chain_name,
+            .image_count = vulkan.config.max_frames_in_flight,
+        });
+    }
+
     void record_command_buffer(Vulkan& vulkan, VkCommandBuffer command_buffer, u32 image_index) {
         VkCommandBufferBeginInfo command_buffer_begin_info{};
         command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -101,29 +127,66 @@ namespace Game {
         }
     }
 
-    void render_frame(Vulkan& vulkan, u32 current_frame) {
+    void render_frame(Vulkan& vulkan, u32 current_frame, bool* framebuffer_resized) {
         VkCommandBuffer command_buffer = vulkan.command_buffers[current_frame];
         VkFence in_flight_fence = vulkan.in_flight_fences[current_frame];
         VkSemaphore image_available_semaphore = vulkan.image_available_semaphores[current_frame];
         VkSemaphore render_finished_semaphore = vulkan.render_finished_semaphores[current_frame];
 
-        i32 fence_count = 1;
+        //
+        // Wait for the previous frame to finish.
+        //
 
+        u32 fence_count = 1;
         VkBool32 wait_for_all_fences = VK_TRUE;
         u64 wait_for_fences_timeout = UINT64_MAX;
-        vkWaitForFences(vulkan.device, fence_count, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout);
+        if (vkWaitForFences(vulkan.device, fence_count, &in_flight_fence, wait_for_all_fences, wait_for_fences_timeout) != VK_SUCCESS) {
+            GM_THROW("Could not wait for 'in flight' fence for frame [" << current_frame << "]");
+        }
 
-        vkResetFences(vulkan.device, fence_count, &in_flight_fence);
+        //
+        // Acquire an image from the swap chain to use for the current frame.
+        //
 
-        uint32_t image_index;
+        u32 image_index;
         u64 wait_for_next_image_timeout = UINT64_MAX;
         VkFence next_image_fence = VK_NULL_HANDLE;
-        vkAcquireNextImageKHR(vulkan.device, vulkan.swap_chain, wait_for_next_image_timeout, image_available_semaphore, next_image_fence, &image_index);
+        VkResult next_image_result = vkAcquireNextImageKHR(
+            vulkan.device,
+            vulkan.swap_chain,
+            wait_for_next_image_timeout,
+            image_available_semaphore,
+            next_image_fence,
+            &image_index
+        );
+        // VK_ERROR_OUT_OF_DATE_KHR: The swap chain has become incompatible with the surface and can no longer be used for rendering.
+        if (next_image_result == VK_ERROR_OUT_OF_DATE_KHR) {
+            recreate_swap_chain(vulkan);
+            return;
+        }
+        // VK_SUBOPTIMAL_KHR: The swap chain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
+        if (next_image_result != VK_SUCCESS && next_image_result != VK_SUBOPTIMAL_KHR) {
+            GM_THROW("Could not acquire swap chain image for frame [" << current_frame << "]");
+        }
+
+        // Delay resetting the fence until after we have successfully acquired an image, and we know for sure we will be submitting work with it.
+        // Thus, if we return early, the fence is still signaled and vkWaitForFences won't deadlock the next time we use the same fence object.
+        if (vkResetFences(vulkan.device, fence_count, &in_flight_fence) != VK_SUCCESS) {
+            GM_THROW("Could not reset 'in flight' fence for frame [" << current_frame << "]");
+        }
+
+        //
+        // Record rendering commands to render the scene onto the swap chain image.
+        //
 
         VkCommandBufferResetFlags command_buffer_reset_flags = 0;
         vkResetCommandBuffer(command_buffer, command_buffer_reset_flags);
 
         record_command_buffer(vulkan, command_buffer, image_index);
+
+        //
+        // Submit the recorded rendering commands to the graphics queue to render the swap chain image.
+        //
 
         VkDebugUtilsLabelEXT graphis_queue_label{};
         graphis_queue_label.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
@@ -166,6 +229,10 @@ namespace Game {
 
         end_queue_debug_label(vulkan.device, vulkan.graphics_queue);
 
+        //
+        // Present the rendered swap chain image to the surface (screen)
+        //
+
         VkSwapchainKHR swap_chains[] = {
             vulkan.swap_chain
         };
@@ -186,16 +253,25 @@ namespace Game {
 
         insert_queue_debug_label(vulkan.device, vulkan.graphics_queue, VkDebugUtilsLabelEXT{
             .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
-            .pLabelName = "Present rendered image to swap chain",
+            .pLabelName = "Present swap chain image to the surface",
         });
 
-        vkQueuePresentKHR(vulkan.present_queue, &present_info);
+        VkResult present_result = vkQueuePresentKHR(vulkan.present_queue, &present_info);
+
+        // VK_ERROR_OUT_OF_DATE_KHR: The swap chain has become incompatible with the surface and can no longer be used for rendering.
+        // VK_SUBOPTIMAL_KHR: The swap chain can still be used to successfully present to the surface, but the surface properties are no longer matched exactly.
+        if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || *framebuffer_resized) {
+            *framebuffer_resized = false;
+            recreate_swap_chain(vulkan);
+        } else if (present_result != VK_SUCCESS) {
+            GM_THROW("Could not present swap chain image to the surface");
+        }
 
         end_queue_debug_label(vulkan.device, vulkan.present_queue);
     }
 
     void render_frame(Renderer& renderer) {
-        render_frame(renderer.vulkan, renderer.current_frame);
+        render_frame(renderer.vulkan, renderer.current_frame, &renderer.framebuffer_resized);
         renderer.current_frame = (renderer.current_frame + 1) % renderer.max_frames_in_flight;
     }
 
@@ -214,5 +290,13 @@ namespace Game {
     void destroy_renderer(const Renderer& renderer) {
         vkDeviceWaitIdle(renderer.vulkan.device);
         destroy_vulkan(renderer.vulkan);
+    }
+
+    bool handle_renderer_event(Renderer& renderer, const Event& event) {
+        if (event.type == EventType::WindowResize) {
+            renderer.framebuffer_resized = true;
+            return true;
+        }
+        return false;
     }
 }
