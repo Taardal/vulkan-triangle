@@ -24,7 +24,7 @@ namespace Game {
 
     void destroy_app(const App& app);
 
-    void start(App& app);
+    void start_app(App& app);
 
-    void stop(App& app);
+    void stop_app(App& app);
 }

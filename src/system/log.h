@@ -30,9 +30,5 @@ namespace Game {
 
     void initialize_log(LogLevel level);
 
-    // Set runtime log-level. This determines which log statements are actually printed at runtime.
-    // This does not matter if the compile-time log-level is higher and the log statements are compiled out.
-    void set_log_level(LogLevel level);
-
     std::string tag(const char* file_name, const char* function_name, int line_number);
 }

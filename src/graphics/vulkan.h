@@ -46,6 +46,10 @@ namespace Game {
         std::vector<VkImageView> swap_chain_image_views;
         std::vector<VkFramebuffer> swap_chain_framebuffers;
         VkRenderPass swap_chain_render_pass = nullptr;
+        std::vector<VkFence> swap_chain_in_flight_fences;
+        std::vector<VkSemaphore> swap_chain_image_available_semaphores;
+        std::vector<VkSemaphore> swap_chain_render_finished_semaphores;
+        u32 swap_chain_current_image_index;
         std::string swap_chain_name;
 
         VkPipeline pipeline = nullptr;
@@ -55,10 +59,6 @@ namespace Game {
 
         VkCommandPool command_pool = nullptr;
         std::vector<VkCommandBuffer> command_buffers;
-
-        std::vector<VkSemaphore> image_available_semaphores;
-        std::vector<VkSemaphore> render_finished_semaphores;
-        std::vector<VkFence> in_flight_fences;
     };
 
     void create_vulkan(Vulkan& vulkan, const VulkanConfig& config);

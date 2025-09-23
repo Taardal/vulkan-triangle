@@ -2,7 +2,7 @@
 #include "system/time.h"
 
 namespace Game {
-    void game_loop(App& app, const GameLoopConfig& config) {
+    void run_game_loop(App& app, const GameLoopConfig& config) {
 
         // Update game at fixed timesteps to have game systems update at a predictable rate
         constexpr f64 timestep_sec = 1.0 / 60.0;
@@ -34,7 +34,7 @@ namespace Game {
             glfwPollEvents();
 
             if (glfwWindowShouldClose(app.window)) {
-                stop(app);
+                stop_app(app);
             }
 
             //

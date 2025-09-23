@@ -9,6 +9,7 @@ namespace Game {
             .maximized = config.maximized,
             .resizable = config.resizable,
         });
+
         create_renderer(app.renderer, {
             .window = &app.window,
             .app_name = config.title,
@@ -22,11 +23,11 @@ namespace Game {
         destroy_window(app.window);
     }
 
-    void start(App& app) {
+    void start_app(App& app) {
         app.running = true;
     }
 
-    void stop(App& app) {
+    void stop_app(App& app) {
         app.running = false;
     }
 }

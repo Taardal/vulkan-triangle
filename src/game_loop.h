@@ -8,5 +8,5 @@ namespace Game {
         std::function<void(App& app)> on_render;
     };
 
-    void game_loop(App& app, const GameLoopConfig& config);
+    void run_game_loop(App& app, const GameLoopConfig& config);
 }

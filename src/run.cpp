@@ -3,26 +3,26 @@
 #include "window/key_event.h"
 
 namespace Game {
-    void update(App& app, f64 timestep) {
-    }
-
-    void render(App& app) {
-        render_frame(app.renderer);
-    }
-
     void on_event(App& app, Event& e) {
         if (e.type == EventType::WindowClose) {
-            stop(app);
+            stop_app(app);
             return;
         }
         if (e.type == EventType::KeyPressed) {
             auto& event = (KeyPressedEvent&) e;
             if (event.key == Key::Escape) {
-                stop(app);
+                stop_app(app);
                 return;
             }
         }
         handle_renderer_event(app.renderer, e);
+    }
+
+    void update(App& app, f64 timestep) {
+    }
+
+    void render(App& app) {
+        render_frame(app.renderer);
     }
 
     void init(App& app) {
@@ -38,21 +38,17 @@ namespace Game {
 
     void run(const AppConfig& config) {
         init(config);
-        try {
-            App app{};
-            create_app(app, config);
-            init(app);
-            start(app);
-            game_loop(app, {
-                .on_update = update,
-                .on_render = render,
-            });
-            destroy_app(app);
-        } catch (const Game::Error& e) {
-            GM_LOG_CRITICAL("Fatal error");
-            e.printStacktrace();
-        } catch (const std::exception& e) {
-            GM_LOG_CRITICAL("Fatal error: {}", e.what());
-        }
+
+        App app{};
+        create_app(app, config);
+        init(app);
+
+        start_app(app);
+        run_game_loop(app, {
+            .on_update = update,
+            .on_render = render,
+        });
+
+        destroy_app(app);
     }
 }
