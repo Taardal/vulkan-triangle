@@ -14,7 +14,7 @@ namespace Game {
         std::string application_name;
         std::string engine_name;
         bool validation_layers_enabled = false;
-        bool debug_extension_enabled = false;
+        u32 max_frames_in_flight = 0;
     };
 
     struct Vulkan {
@@ -51,12 +51,11 @@ namespace Game {
         VkShaderModule fragment_shader = nullptr;
 
         VkCommandPool command_pool = nullptr;
-        VkCommandBuffer command_buffer = nullptr;
         std::vector<VkCommandBuffer> command_buffers;
 
-        VkSemaphore image_available_semaphore;
-        VkSemaphore render_finished_semaphore;
-        VkFence in_flight_fence;
+        std::vector<VkSemaphore> image_available_semaphores;
+        std::vector<VkSemaphore> render_finished_semaphores;
+        std::vector<VkFence> in_flight_fences;
     };
 
     void create_vulkan(Vulkan& vulkan, const VulkanConfig& config);

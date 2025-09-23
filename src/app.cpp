@@ -9,17 +9,16 @@ namespace Game {
             .maximized = config.maximized,
             .resizable = config.resizable,
         });
-        create_vulkan(app.vulkan, {
+        create_renderer(app.renderer, {
             .window = &app.window,
-            .application_name = config.title,
-            .engine_name = std::format("{} Engine", config.title),
-            .validation_layers_enabled = true,
-            .debug_extension_enabled = true,
+            .app_name = config.title,
+            .debug_enabled = true,
+            .max_frames_in_flight = 2,
         });
     }
 
     void destroy_app(const App& app) {
-        destroy_vulkan(app.vulkan);
+        destroy_renderer(app.renderer);
         destroy_window(app.window);
     }
 

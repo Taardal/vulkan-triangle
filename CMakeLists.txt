@@ -28,10 +28,14 @@ set(
     ${src_dir}/game_loop.h
     ${src_dir}/run.cpp
     ${src_dir}/run.h
+    ${src_dir}/graphics/renderer.cpp
+    ${src_dir}/graphics/renderer.h
     ${src_dir}/graphics/vulkan.cpp
     ${src_dir}/graphics/vulkan.h
     ${src_dir}/graphics/vulkan_allocator.h
     ${src_dir}/graphics/vulkan_assert.h
+    ${src_dir}/graphics/vulkan_command_pool.cpp
+    ${src_dir}/graphics/vulkan_command_pool.h
     ${src_dir}/graphics/vulkan_device.cpp
     ${src_dir}/graphics/vulkan_device.h
     ${src_dir}/graphics/vulkan_instance.cpp

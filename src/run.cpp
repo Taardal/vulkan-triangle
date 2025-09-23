@@ -7,7 +7,7 @@ namespace Game {
     }
 
     void render(App& app) {
-        render_frame(app.vulkan);
+        render_frame(app.renderer);
     }
 
     void on_event(App& app, Event& e) {

@@ -5,8 +5,9 @@
 
 namespace Game {
     struct SwapChainConfig {
-        std::string name = "SwapChain";
         Window* window = nullptr;
+        std::string name = "SwapChain";
+        u32 image_count = 0;
     };
 
     void create_vulkan_swap_chain(Vulkan& vulkan, const SwapChainConfig& config);

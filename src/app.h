@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/vulkan.h"
+#include "graphics/renderer.h"
 #include "window/window.h"
 
 namespace Game {
@@ -16,7 +16,7 @@ namespace Game {
     struct App {
         AppConfig config{};
         bool running = false;
-        Vulkan vulkan{};
+        Renderer renderer{};
         Window window{};
     };
 

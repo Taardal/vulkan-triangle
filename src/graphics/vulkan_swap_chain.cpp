@@ -2,6 +2,54 @@
 #include "vulkan_device.h"
 
 namespace Game {
+    void create_sync_objects(Vulkan& vulkan, const SwapChainConfig& config) {
+        vulkan.image_available_semaphores.resize(config.image_count);
+        vulkan.render_finished_semaphores.resize(config.image_count);
+        vulkan.in_flight_fences.resize(config.image_count);
+
+        VkSemaphoreCreateInfo semaphore_create_info{};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fence_create_info{};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for (u32 i = 0; i < config.image_count; i++) {
+            if (vkCreateSemaphore(vulkan.device, &semaphore_create_info, GM_VK_ALLOCATOR, &vulkan.image_available_semaphores[i]) != VK_SUCCESS) {
+                GM_THROW("Could not create 'image available' semaphore");
+            }
+
+            if (vkCreateSemaphore(vulkan.device, &semaphore_create_info, GM_VK_ALLOCATOR, &vulkan.render_finished_semaphores[i]) != VK_SUCCESS) {
+                GM_THROW("Could not create 'render finished' semaphore");
+            }
+
+            if (vkCreateFence(vulkan.device, &fence_create_info, GM_VK_ALLOCATOR, &vulkan.in_flight_fences[i]) != VK_SUCCESS) {
+                GM_THROW("Could not create 'in flight' fence");
+            }
+
+            std::string image_available_semaphore_name = std::format("{} Semaphore ImageAvailable", config.name.c_str());
+            set_vulkan_object_name(vulkan.device, vulkan.image_available_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, image_available_semaphore_name.c_str());
+
+            std::string render_finished_semaphore_name = std::format("{} Semaphore RenderFinished", config.name.c_str());
+            set_vulkan_object_name(vulkan.device, vulkan.render_finished_semaphores[i], VK_OBJECT_TYPE_SEMAPHORE, render_finished_semaphore_name.c_str());
+
+            std::string in_flight_fence_name = std::format("{} Fence InFlight", config.name.c_str());
+            set_vulkan_object_name(vulkan.device, vulkan.in_flight_fences[i], VK_OBJECT_TYPE_FENCE, in_flight_fence_name.c_str());
+        }
+    }
+
+    void destroy_sync_objects(const Vulkan& vulkan) {
+        for (u32 i = 0; i < vulkan.image_available_semaphores.size(); i++) {
+            vkDestroySemaphore(vulkan.device, vulkan.image_available_semaphores[i], GM_VK_ALLOCATOR);
+        }
+        for (u32 i = 0; i < vulkan.render_finished_semaphores.size(); i++) {
+            vkDestroySemaphore(vulkan.device, vulkan.render_finished_semaphores[i], GM_VK_ALLOCATOR);
+        }
+        for (u32 i = 0; i < vulkan.in_flight_fences.size(); i++) {
+            vkDestroyFence(vulkan.device, vulkan.in_flight_fences[i], GM_VK_ALLOCATOR);
+        }
+    }
+
     void create_framebuffers(Vulkan& vulkan, const SwapChainConfig& config) {
         u32 image_count = vulkan.swap_chain_images.size();
         vulkan.swap_chain_framebuffers.resize(image_count);
@@ -231,40 +279,6 @@ namespace Game {
 
     void destroy_swap_chain(const Vulkan& vulkan) {
         vkDestroySwapchainKHR(vulkan.device, vulkan.swap_chain, GM_VK_ALLOCATOR);
-    }
-
-    void create_sync_objects(Vulkan& vulkan, const SwapChainConfig& config) {
-        VkSemaphoreCreateInfo semaphore_create_info{};
-        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-        VkFenceCreateInfo fence_create_info{};
-        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-        if (vkCreateSemaphore(vulkan.device, &semaphore_create_info, GM_VK_ALLOCATOR, &vulkan.image_available_semaphore) != VK_SUCCESS) {
-            GM_THROW("Could not create 'image available' semaphore");
-        }
-        if (vkCreateSemaphore(vulkan.device, &semaphore_create_info, GM_VK_ALLOCATOR, &vulkan.render_finished_semaphore) != VK_SUCCESS) {
-            GM_THROW("Could not create 'render finished' semaphore");
-        }
-        if (vkCreateFence(vulkan.device, &fence_create_info, GM_VK_ALLOCATOR, &vulkan.in_flight_fence) != VK_SUCCESS) {
-            GM_THROW("Could not create 'in flight' fence");
-        }
-
-        std::string image_available_semaphore_name = std::format("{} Semaphore ImageAvailable", config.name.c_str());
-        set_vulkan_object_name(vulkan.device, vulkan.image_available_semaphore, VK_OBJECT_TYPE_SEMAPHORE, image_available_semaphore_name.c_str());
-
-        std::string render_finished_semaphore_name = std::format("{} Semaphore RenderFinished", config.name.c_str());
-        set_vulkan_object_name(vulkan.device, vulkan.render_finished_semaphore, VK_OBJECT_TYPE_SEMAPHORE, render_finished_semaphore_name.c_str());
-
-        std::string in_flight_fence_name = std::format("{} Fence InFlight", config.name.c_str());
-        set_vulkan_object_name(vulkan.device, vulkan.render_finished_semaphore, VK_OBJECT_TYPE_SEMAPHORE, in_flight_fence_name.c_str());
-    }
-
-    void destroy_sync_objects(const Vulkan& vulkan) {
-        vkDestroySemaphore(vulkan.device, vulkan.image_available_semaphore, GM_VK_ALLOCATOR);
-        vkDestroySemaphore(vulkan.device, vulkan.render_finished_semaphore, GM_VK_ALLOCATOR);
-        vkDestroyFence(vulkan.device, vulkan.in_flight_fence, GM_VK_ALLOCATOR);
     }
 
     void create_vulkan_swap_chain(Vulkan& vulkan, const SwapChainConfig& config) {

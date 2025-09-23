@@ -8,7 +8,6 @@ namespace Game {
         std::string application_name;
         std::string engine_name;
         bool validation_layers_enabled = false;
-        bool debug_extension_enabled = false;
     };
 
     void create_vulkan_instance(Vulkan& vulkan, const VulkanInstanceConfig& config);
